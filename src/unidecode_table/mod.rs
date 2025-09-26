@@ -1,0 +1,367 @@
+// Auto-generated. Do not edit manually.
+pub mod m00 { include!("./00.rs"); }
+pub mod m01 { include!("./01.rs"); }
+pub mod m02 { include!("./02.rs"); }
+pub mod m03 { include!("./03.rs"); }
+pub mod m04 { include!("./04.rs"); }
+pub mod m05 { include!("./05.rs"); }
+pub mod m06 { include!("./06.rs"); }
+pub mod m07 { include!("./07.rs"); }
+pub mod m09 { include!("./09.rs"); }
+pub mod m0a { include!("./0a.rs"); }
+pub mod m0b { include!("./0b.rs"); }
+pub mod m0c { include!("./0c.rs"); }
+pub mod m0d { include!("./0d.rs"); }
+pub mod m0e { include!("./0e.rs"); }
+pub mod m0f { include!("./0f.rs"); }
+pub mod m10 { include!("./10.rs"); }
+pub mod m11 { include!("./11.rs"); }
+pub mod m12 { include!("./12.rs"); }
+pub mod m13 { include!("./13.rs"); }
+pub mod m14 { include!("./14.rs"); }
+pub mod m15 { include!("./15.rs"); }
+pub mod m16 { include!("./16.rs"); }
+pub mod m17 { include!("./17.rs"); }
+pub mod m18 { include!("./18.rs"); }
+pub mod m1d { include!("./1d.rs"); }
+pub mod m1e { include!("./1e.rs"); }
+pub mod m1f { include!("./1f.rs"); }
+pub mod m20 { include!("./20.rs"); }
+pub mod m21 { include!("./21.rs"); }
+pub mod m22 { include!("./22.rs"); }
+pub mod m23 { include!("./23.rs"); }
+pub mod m24 { include!("./24.rs"); }
+pub mod m25 { include!("./25.rs"); }
+pub mod m26 { include!("./26.rs"); }
+pub mod m27 { include!("./27.rs"); }
+pub mod m28 { include!("./28.rs"); }
+pub mod m29 { include!("./29.rs"); }
+pub mod m2a { include!("./2a.rs"); }
+pub mod m2c { include!("./2c.rs"); }
+pub mod m2e { include!("./2e.rs"); }
+pub mod m30 { include!("./30.rs"); }
+pub mod m31 { include!("./31.rs"); }
+pub mod m32 { include!("./32.rs"); }
+pub mod m33 { include!("./33.rs"); }
+pub mod m4e { include!("./4e.rs"); }
+pub mod m4f { include!("./4f.rs"); }
+pub mod m50 { include!("./50.rs"); }
+pub mod m51 { include!("./51.rs"); }
+pub mod m52 { include!("./52.rs"); }
+pub mod m53 { include!("./53.rs"); }
+pub mod m54 { include!("./54.rs"); }
+pub mod m55 { include!("./55.rs"); }
+pub mod m56 { include!("./56.rs"); }
+pub mod m57 { include!("./57.rs"); }
+pub mod m58 { include!("./58.rs"); }
+pub mod m59 { include!("./59.rs"); }
+pub mod m5a { include!("./5a.rs"); }
+pub mod m5b { include!("./5b.rs"); }
+pub mod m5c { include!("./5c.rs"); }
+pub mod m5d { include!("./5d.rs"); }
+pub mod m5e { include!("./5e.rs"); }
+pub mod m5f { include!("./5f.rs"); }
+pub mod m60 { include!("./60.rs"); }
+pub mod m61 { include!("./61.rs"); }
+pub mod m62 { include!("./62.rs"); }
+pub mod m63 { include!("./63.rs"); }
+pub mod m64 { include!("./64.rs"); }
+pub mod m65 { include!("./65.rs"); }
+pub mod m66 { include!("./66.rs"); }
+pub mod m67 { include!("./67.rs"); }
+pub mod m68 { include!("./68.rs"); }
+pub mod m69 { include!("./69.rs"); }
+pub mod m6a { include!("./6a.rs"); }
+pub mod m6b { include!("./6b.rs"); }
+pub mod m6c { include!("./6c.rs"); }
+pub mod m6d { include!("./6d.rs"); }
+pub mod m6e { include!("./6e.rs"); }
+pub mod m6f { include!("./6f.rs"); }
+pub mod m70 { include!("./70.rs"); }
+pub mod m71 { include!("./71.rs"); }
+pub mod m72 { include!("./72.rs"); }
+pub mod m73 { include!("./73.rs"); }
+pub mod m74 { include!("./74.rs"); }
+pub mod m75 { include!("./75.rs"); }
+pub mod m76 { include!("./76.rs"); }
+pub mod m77 { include!("./77.rs"); }
+pub mod m78 { include!("./78.rs"); }
+pub mod m79 { include!("./79.rs"); }
+pub mod m7a { include!("./7a.rs"); }
+pub mod m7b { include!("./7b.rs"); }
+pub mod m7c { include!("./7c.rs"); }
+pub mod m7d { include!("./7d.rs"); }
+pub mod m7e { include!("./7e.rs"); }
+pub mod m7f { include!("./7f.rs"); }
+pub mod m80 { include!("./80.rs"); }
+pub mod m81 { include!("./81.rs"); }
+pub mod m82 { include!("./82.rs"); }
+pub mod m83 { include!("./83.rs"); }
+pub mod m84 { include!("./84.rs"); }
+pub mod m85 { include!("./85.rs"); }
+pub mod m86 { include!("./86.rs"); }
+pub mod m87 { include!("./87.rs"); }
+pub mod m88 { include!("./88.rs"); }
+pub mod m89 { include!("./89.rs"); }
+pub mod m8a { include!("./8a.rs"); }
+pub mod m8b { include!("./8b.rs"); }
+pub mod m8c { include!("./8c.rs"); }
+pub mod m8d { include!("./8d.rs"); }
+pub mod m8e { include!("./8e.rs"); }
+pub mod m8f { include!("./8f.rs"); }
+pub mod m90 { include!("./90.rs"); }
+pub mod m91 { include!("./91.rs"); }
+pub mod m92 { include!("./92.rs"); }
+pub mod m93 { include!("./93.rs"); }
+pub mod m94 { include!("./94.rs"); }
+pub mod m95 { include!("./95.rs"); }
+pub mod m96 { include!("./96.rs"); }
+pub mod m97 { include!("./97.rs"); }
+pub mod m98 { include!("./98.rs"); }
+pub mod m99 { include!("./99.rs"); }
+pub mod m9a { include!("./9a.rs"); }
+pub mod m9b { include!("./9b.rs"); }
+pub mod m9c { include!("./9c.rs"); }
+pub mod m9d { include!("./9d.rs"); }
+pub mod m9e { include!("./9e.rs"); }
+pub mod m9f { include!("./9f.rs"); }
+pub mod ma0 { include!("./a0.rs"); }
+pub mod ma1 { include!("./a1.rs"); }
+pub mod ma2 { include!("./a2.rs"); }
+pub mod ma3 { include!("./a3.rs"); }
+pub mod ma4 { include!("./a4.rs"); }
+pub mod mac { include!("./ac.rs"); }
+pub mod mad { include!("./ad.rs"); }
+pub mod mae { include!("./ae.rs"); }
+pub mod maf { include!("./af.rs"); }
+pub mod mb0 { include!("./b0.rs"); }
+pub mod mb1 { include!("./b1.rs"); }
+pub mod mb2 { include!("./b2.rs"); }
+pub mod mb3 { include!("./b3.rs"); }
+pub mod mb4 { include!("./b4.rs"); }
+pub mod mb5 { include!("./b5.rs"); }
+pub mod mb6 { include!("./b6.rs"); }
+pub mod mb7 { include!("./b7.rs"); }
+pub mod mb8 { include!("./b8.rs"); }
+pub mod mb9 { include!("./b9.rs"); }
+pub mod mba { include!("./ba.rs"); }
+pub mod mbb { include!("./bb.rs"); }
+pub mod mbc { include!("./bc.rs"); }
+pub mod mbd { include!("./bd.rs"); }
+pub mod mbe { include!("./be.rs"); }
+pub mod mbf { include!("./bf.rs"); }
+pub mod mc0 { include!("./c0.rs"); }
+pub mod mc1 { include!("./c1.rs"); }
+pub mod mc2 { include!("./c2.rs"); }
+pub mod mc3 { include!("./c3.rs"); }
+pub mod mc4 { include!("./c4.rs"); }
+pub mod mc5 { include!("./c5.rs"); }
+pub mod mc6 { include!("./c6.rs"); }
+pub mod mc7 { include!("./c7.rs"); }
+pub mod mc8 { include!("./c8.rs"); }
+pub mod mc9 { include!("./c9.rs"); }
+pub mod mca { include!("./ca.rs"); }
+pub mod mcb { include!("./cb.rs"); }
+pub mod mcc { include!("./cc.rs"); }
+pub mod mcd { include!("./cd.rs"); }
+pub mod mce { include!("./ce.rs"); }
+pub mod mcf { include!("./cf.rs"); }
+pub mod md0 { include!("./d0.rs"); }
+pub mod md1 { include!("./d1.rs"); }
+pub mod md2 { include!("./d2.rs"); }
+pub mod md3 { include!("./d3.rs"); }
+pub mod md4 { include!("./d4.rs"); }
+pub mod md5 { include!("./d5.rs"); }
+pub mod md6 { include!("./d6.rs"); }
+pub mod md7 { include!("./d7.rs"); }
+pub mod mf9 { include!("./f9.rs"); }
+pub mod mfa { include!("./fa.rs"); }
+pub mod mfb { include!("./fb.rs"); }
+pub mod mfe { include!("./fe.rs"); }
+pub mod mff { include!("./ff.rs"); }
+
+pub fn lookup(cp: u32) -> Option<&'static str> {
+    match cp >> 8 {
+        0x0 => m00::BLOCK_00.get(&cp).copied(),
+        0x1 => m01::BLOCK_01.get(&cp).copied(),
+        0x2 => m02::BLOCK_02.get(&cp).copied(),
+        0x3 => m03::BLOCK_03.get(&cp).copied(),
+        0x4 => m04::BLOCK_04.get(&cp).copied(),
+        0x5 => m05::BLOCK_05.get(&cp).copied(),
+        0x6 => m06::BLOCK_06.get(&cp).copied(),
+        0x7 => m07::BLOCK_07.get(&cp).copied(),
+        0x9 => m09::BLOCK_09.get(&cp).copied(),
+        0xa => m0a::BLOCK_0A.get(&cp).copied(),
+        0xb => m0b::BLOCK_0B.get(&cp).copied(),
+        0xc => m0c::BLOCK_0C.get(&cp).copied(),
+        0xd => m0d::BLOCK_0D.get(&cp).copied(),
+        0xe => m0e::BLOCK_0E.get(&cp).copied(),
+        0xf => m0f::BLOCK_0F.get(&cp).copied(),
+        0x10 => m10::BLOCK_10.get(&cp).copied(),
+        0x11 => m11::BLOCK_11.get(&cp).copied(),
+        0x12 => m12::BLOCK_12.get(&cp).copied(),
+        0x13 => m13::BLOCK_13.get(&cp).copied(),
+        0x14 => m14::BLOCK_14.get(&cp).copied(),
+        0x15 => m15::BLOCK_15.get(&cp).copied(),
+        0x16 => m16::BLOCK_16.get(&cp).copied(),
+        0x17 => m17::BLOCK_17.get(&cp).copied(),
+        0x18 => m18::BLOCK_18.get(&cp).copied(),
+        0x1d => m1d::BLOCK_1D.get(&cp).copied(),
+        0x1e => m1e::BLOCK_1E.get(&cp).copied(),
+        0x1f => m1f::BLOCK_1F.get(&cp).copied(),
+        0x20 => m20::BLOCK_20.get(&cp).copied(),
+        0x21 => m21::BLOCK_21.get(&cp).copied(),
+        0x22 => m22::BLOCK_22.get(&cp).copied(),
+        0x23 => m23::BLOCK_23.get(&cp).copied(),
+        0x24 => m24::BLOCK_24.get(&cp).copied(),
+        0x25 => m25::BLOCK_25.get(&cp).copied(),
+        0x26 => m26::BLOCK_26.get(&cp).copied(),
+        0x27 => m27::BLOCK_27.get(&cp).copied(),
+        0x28 => m28::BLOCK_28.get(&cp).copied(),
+        0x29 => m29::BLOCK_29.get(&cp).copied(),
+        0x2a => m2a::BLOCK_2A.get(&cp).copied(),
+        0x2c => m2c::BLOCK_2C.get(&cp).copied(),
+        0x2e => m2e::BLOCK_2E.get(&cp).copied(),
+        0x30 => m30::BLOCK_30.get(&cp).copied(),
+        0x31 => m31::BLOCK_31.get(&cp).copied(),
+        0x32 => m32::BLOCK_32.get(&cp).copied(),
+        0x33 => m33::BLOCK_33.get(&cp).copied(),
+        0x4e => m4e::BLOCK_4E.get(&cp).copied(),
+        0x4f => m4f::BLOCK_4F.get(&cp).copied(),
+        0x50 => m50::BLOCK_50.get(&cp).copied(),
+        0x51 => m51::BLOCK_51.get(&cp).copied(),
+        0x52 => m52::BLOCK_52.get(&cp).copied(),
+        0x53 => m53::BLOCK_53.get(&cp).copied(),
+        0x54 => m54::BLOCK_54.get(&cp).copied(),
+        0x55 => m55::BLOCK_55.get(&cp).copied(),
+        0x56 => m56::BLOCK_56.get(&cp).copied(),
+        0x57 => m57::BLOCK_57.get(&cp).copied(),
+        0x58 => m58::BLOCK_58.get(&cp).copied(),
+        0x59 => m59::BLOCK_59.get(&cp).copied(),
+        0x5a => m5a::BLOCK_5A.get(&cp).copied(),
+        0x5b => m5b::BLOCK_5B.get(&cp).copied(),
+        0x5c => m5c::BLOCK_5C.get(&cp).copied(),
+        0x5d => m5d::BLOCK_5D.get(&cp).copied(),
+        0x5e => m5e::BLOCK_5E.get(&cp).copied(),
+        0x5f => m5f::BLOCK_5F.get(&cp).copied(),
+        0x60 => m60::BLOCK_60.get(&cp).copied(),
+        0x61 => m61::BLOCK_61.get(&cp).copied(),
+        0x62 => m62::BLOCK_62.get(&cp).copied(),
+        0x63 => m63::BLOCK_63.get(&cp).copied(),
+        0x64 => m64::BLOCK_64.get(&cp).copied(),
+        0x65 => m65::BLOCK_65.get(&cp).copied(),
+        0x66 => m66::BLOCK_66.get(&cp).copied(),
+        0x67 => m67::BLOCK_67.get(&cp).copied(),
+        0x68 => m68::BLOCK_68.get(&cp).copied(),
+        0x69 => m69::BLOCK_69.get(&cp).copied(),
+        0x6a => m6a::BLOCK_6A.get(&cp).copied(),
+        0x6b => m6b::BLOCK_6B.get(&cp).copied(),
+        0x6c => m6c::BLOCK_6C.get(&cp).copied(),
+        0x6d => m6d::BLOCK_6D.get(&cp).copied(),
+        0x6e => m6e::BLOCK_6E.get(&cp).copied(),
+        0x6f => m6f::BLOCK_6F.get(&cp).copied(),
+        0x70 => m70::BLOCK_70.get(&cp).copied(),
+        0x71 => m71::BLOCK_71.get(&cp).copied(),
+        0x72 => m72::BLOCK_72.get(&cp).copied(),
+        0x73 => m73::BLOCK_73.get(&cp).copied(),
+        0x74 => m74::BLOCK_74.get(&cp).copied(),
+        0x75 => m75::BLOCK_75.get(&cp).copied(),
+        0x76 => m76::BLOCK_76.get(&cp).copied(),
+        0x77 => m77::BLOCK_77.get(&cp).copied(),
+        0x78 => m78::BLOCK_78.get(&cp).copied(),
+        0x79 => m79::BLOCK_79.get(&cp).copied(),
+        0x7a => m7a::BLOCK_7A.get(&cp).copied(),
+        0x7b => m7b::BLOCK_7B.get(&cp).copied(),
+        0x7c => m7c::BLOCK_7C.get(&cp).copied(),
+        0x7d => m7d::BLOCK_7D.get(&cp).copied(),
+        0x7e => m7e::BLOCK_7E.get(&cp).copied(),
+        0x7f => m7f::BLOCK_7F.get(&cp).copied(),
+        0x80 => m80::BLOCK_80.get(&cp).copied(),
+        0x81 => m81::BLOCK_81.get(&cp).copied(),
+        0x82 => m82::BLOCK_82.get(&cp).copied(),
+        0x83 => m83::BLOCK_83.get(&cp).copied(),
+        0x84 => m84::BLOCK_84.get(&cp).copied(),
+        0x85 => m85::BLOCK_85.get(&cp).copied(),
+        0x86 => m86::BLOCK_86.get(&cp).copied(),
+        0x87 => m87::BLOCK_87.get(&cp).copied(),
+        0x88 => m88::BLOCK_88.get(&cp).copied(),
+        0x89 => m89::BLOCK_89.get(&cp).copied(),
+        0x8a => m8a::BLOCK_8A.get(&cp).copied(),
+        0x8b => m8b::BLOCK_8B.get(&cp).copied(),
+        0x8c => m8c::BLOCK_8C.get(&cp).copied(),
+        0x8d => m8d::BLOCK_8D.get(&cp).copied(),
+        0x8e => m8e::BLOCK_8E.get(&cp).copied(),
+        0x8f => m8f::BLOCK_8F.get(&cp).copied(),
+        0x90 => m90::BLOCK_90.get(&cp).copied(),
+        0x91 => m91::BLOCK_91.get(&cp).copied(),
+        0x92 => m92::BLOCK_92.get(&cp).copied(),
+        0x93 => m93::BLOCK_93.get(&cp).copied(),
+        0x94 => m94::BLOCK_94.get(&cp).copied(),
+        0x95 => m95::BLOCK_95.get(&cp).copied(),
+        0x96 => m96::BLOCK_96.get(&cp).copied(),
+        0x97 => m97::BLOCK_97.get(&cp).copied(),
+        0x98 => m98::BLOCK_98.get(&cp).copied(),
+        0x99 => m99::BLOCK_99.get(&cp).copied(),
+        0x9a => m9a::BLOCK_9A.get(&cp).copied(),
+        0x9b => m9b::BLOCK_9B.get(&cp).copied(),
+        0x9c => m9c::BLOCK_9C.get(&cp).copied(),
+        0x9d => m9d::BLOCK_9D.get(&cp).copied(),
+        0x9e => m9e::BLOCK_9E.get(&cp).copied(),
+        0x9f => m9f::BLOCK_9F.get(&cp).copied(),
+        0xa0 => ma0::BLOCK_A0.get(&cp).copied(),
+        0xa1 => ma1::BLOCK_A1.get(&cp).copied(),
+        0xa2 => ma2::BLOCK_A2.get(&cp).copied(),
+        0xa3 => ma3::BLOCK_A3.get(&cp).copied(),
+        0xa4 => ma4::BLOCK_A4.get(&cp).copied(),
+        0xac => mac::BLOCK_AC.get(&cp).copied(),
+        0xad => mad::BLOCK_AD.get(&cp).copied(),
+        0xae => mae::BLOCK_AE.get(&cp).copied(),
+        0xaf => maf::BLOCK_AF.get(&cp).copied(),
+        0xb0 => mb0::BLOCK_B0.get(&cp).copied(),
+        0xb1 => mb1::BLOCK_B1.get(&cp).copied(),
+        0xb2 => mb2::BLOCK_B2.get(&cp).copied(),
+        0xb3 => mb3::BLOCK_B3.get(&cp).copied(),
+        0xb4 => mb4::BLOCK_B4.get(&cp).copied(),
+        0xb5 => mb5::BLOCK_B5.get(&cp).copied(),
+        0xb6 => mb6::BLOCK_B6.get(&cp).copied(),
+        0xb7 => mb7::BLOCK_B7.get(&cp).copied(),
+        0xb8 => mb8::BLOCK_B8.get(&cp).copied(),
+        0xb9 => mb9::BLOCK_B9.get(&cp).copied(),
+        0xba => mba::BLOCK_BA.get(&cp).copied(),
+        0xbb => mbb::BLOCK_BB.get(&cp).copied(),
+        0xbc => mbc::BLOCK_BC.get(&cp).copied(),
+        0xbd => mbd::BLOCK_BD.get(&cp).copied(),
+        0xbe => mbe::BLOCK_BE.get(&cp).copied(),
+        0xbf => mbf::BLOCK_BF.get(&cp).copied(),
+        0xc0 => mc0::BLOCK_C0.get(&cp).copied(),
+        0xc1 => mc1::BLOCK_C1.get(&cp).copied(),
+        0xc2 => mc2::BLOCK_C2.get(&cp).copied(),
+        0xc3 => mc3::BLOCK_C3.get(&cp).copied(),
+        0xc4 => mc4::BLOCK_C4.get(&cp).copied(),
+        0xc5 => mc5::BLOCK_C5.get(&cp).copied(),
+        0xc6 => mc6::BLOCK_C6.get(&cp).copied(),
+        0xc7 => mc7::BLOCK_C7.get(&cp).copied(),
+        0xc8 => mc8::BLOCK_C8.get(&cp).copied(),
+        0xc9 => mc9::BLOCK_C9.get(&cp).copied(),
+        0xca => mca::BLOCK_CA.get(&cp).copied(),
+        0xcb => mcb::BLOCK_CB.get(&cp).copied(),
+        0xcc => mcc::BLOCK_CC.get(&cp).copied(),
+        0xcd => mcd::BLOCK_CD.get(&cp).copied(),
+        0xce => mce::BLOCK_CE.get(&cp).copied(),
+        0xcf => mcf::BLOCK_CF.get(&cp).copied(),
+        0xd0 => md0::BLOCK_D0.get(&cp).copied(),
+        0xd1 => md1::BLOCK_D1.get(&cp).copied(),
+        0xd2 => md2::BLOCK_D2.get(&cp).copied(),
+        0xd3 => md3::BLOCK_D3.get(&cp).copied(),
+        0xd4 => md4::BLOCK_D4.get(&cp).copied(),
+        0xd5 => md5::BLOCK_D5.get(&cp).copied(),
+        0xd6 => md6::BLOCK_D6.get(&cp).copied(),
+        0xd7 => md7::BLOCK_D7.get(&cp).copied(),
+        0xf9 => mf9::BLOCK_F9.get(&cp).copied(),
+        0xfa => mfa::BLOCK_FA.get(&cp).copied(),
+        0xfb => mfb::BLOCK_FB.get(&cp).copied(),
+        0xfe => mfe::BLOCK_FE.get(&cp).copied(),
+        0xff => mff::BLOCK_FF.get(&cp).copied(),
+        _ => None,
+    }
+}
