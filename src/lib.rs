@@ -21,10 +21,8 @@ mod unidecode_table {
 /// - Heuristic pre-allocation (~2x input length) for mixed / non-ASCII text.
 /// - Direct char iteration after an initial ASCII rejection (room for SIMD scan later).
 pub fn unidecode(input: &str) -> String {
-    // Fast path: pure ASCII -> identical output.
-    if input.is_ascii() {
-        return input.to_string();
-    }
+    // Fast path: pure ASCII -> identical output (table not needed).
+    if input.is_ascii() { return input.to_string(); }
 
     // Pass 1: estimate resulting length & collect ASCII runs cheaply.
     // We walk UTF-8 decoding minimally using .chars() (still efficient) but track expansion sizes.
@@ -33,8 +31,12 @@ pub fn unidecode(input: &str) -> String {
     let mut estimated = 0usize;
     for ch in input.chars() {
         let cp = ch as u32;
-        if cp < 0x80 {
-            estimated += 1; // ASCII maps to itself.
+        if cp < 0x100 {
+            if cp < 0x80 { // ASCII
+                estimated += 1;
+            } else if let Some(s) = unidecode_table::lookup_0_255(cp) {
+                estimated += s.len();
+            }
         } else if let Some(s) = unidecode_table::lookup(cp) {
             estimated += s.len();
         } else {
@@ -71,6 +73,10 @@ pub fn unidecode(input: &str) -> String {
         let ch = input[i..].chars().next().unwrap();
         i += ch.len_utf8();
         let cp = ch as u32;
+        if cp < 0x100 {
+            if cp < 0x80 { out.push(ch); continue; }
+            if let Some(s) = unidecode_table::lookup_0_255(cp) { out.push_str(s); continue; }
+        }
         if let Some(s) = unidecode_table::lookup(cp) {
             out.push_str(s);
         } else {

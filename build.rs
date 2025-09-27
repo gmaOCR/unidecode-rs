@@ -17,6 +17,9 @@ fn main() {
 
     let python = env::var("PYTHON").unwrap_or_else(|_| "python3".to_string());
 
+    // Collect direct Latin-1 table (0x00-0xFF). We only store non-ASCII (>=0x80) mappings.
+    let mut latin1: Vec<Option<String>> = vec![None; 256];
+
     for block in 0u32..0x110u32 {
         let start = block << 8;
         let end = ((block + 1) << 8) - 1;
@@ -67,12 +70,12 @@ print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
         };
 
         let json_text = String::from_utf8(stdout).expect("python returned non-utf8 output");
-        write_block(&out_dir, block, &json_text);
+        write_block(&out_dir, block, &json_text, &mut latin1);
     }
-    write_mod_rs(&out_dir);
+    write_mod_rs(&out_dir, &latin1);
 }
 
-fn write_mod_rs(out_dir: &Path) {
+fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     // Generate: per-block modules + a compact bitmap array for fast negative checks.
     let mut mod_lines = String::from("// Auto-generated. Do not edit manually.\n");
     mod_lines.push_str("// Each block: 256 code points. BITMAP[block][byte] bit set => mapping present.\n");
@@ -141,9 +144,28 @@ fn write_mod_rs(out_dir: &Path) {
     }
     mod_lines.push_str("        _ => None,\n    }\n}\n");
 
+    // Emit direct table for 0x00-0xFF (empty string means no mapping / removed)
+    mod_lines.push_str("pub static MAP_0_255: [&'static str; 256] = [\n");
+    for cp in 0u32..256u32 {
+        if cp < 0x80 { // ASCII: identity, represent as empty => no override
+            mod_lines.push_str("    \"\",\n");
+            continue;
+        }
+        if let Some(Some(lit)) = latin1.get(cp as usize).map(|o| o.as_ref()) {
+            mod_lines.push_str("    ");
+            mod_lines.push_str(lit);
+            mod_lines.push_str(",\n");
+        } else {
+            mod_lines.push_str("    \"\",\n");
+        }
+    }
+    mod_lines.push_str("];// MAP_0_255\n");
+
+    mod_lines.push_str("#[inline] pub fn lookup_0_255(cp: u32) -> Option<&'static str> { let s = MAP_0_255[cp as usize]; if s.is_empty() { None } else { Some(s) } }\n");
+
     fs::write(out_dir.join("mod.rs"), mod_lines).expect("failed to write unidecode_table/mod.rs");
 }
-fn write_block(out_dir: &Path, block: u32, json_text: &str) {
+fn write_block(out_dir: &Path, block: u32, json_text: &str, latin1: &mut [Option<String>]) {
     let v: serde_json::Value = match serde_json::from_str(json_text) {
         Ok(v) => v,
         Err(e) => panic!("invalid json from python for block {:02x}: {}", block, e),
@@ -161,8 +183,11 @@ fn write_block(out_dir: &Path, block: u32, json_text: &str) {
     for (k, val) in obj {
         let cp: u32 = k.parse().expect("invalid codepoint key from python json");
         let s = val.as_str().expect("expected string value in unidecode json");
-        let s_escaped = format!("{:?}", s);
-    entries.push_str(&format!("    {}u32 => {},\n", cp, s_escaped));
+        let s_escaped = format!("{:?}", s); // Valid Rust string literal
+        entries.push_str(&format!("    {}u32 => {},\n", cp, s_escaped));
+        if cp < 256 && cp >= 0x80 { // Only store non-ASCII transliterations in latin1 table
+            latin1[cp as usize] = Some(s_escaped);
+        }
     }
 
     let content = format!(
