@@ -97,7 +97,7 @@ Extra tests (`lookup_paths.rs` + internal tests in `lib.rs`) exercise:
 - Out‑of‑range block ⇒ early exit
 - ASCII parity / idempotence
 
-Generate local report via `cargo llvm-cov` (alias if configured). Example:
+Generate local report via `cargo llvm-cov` (alias if configured). Detailed guidance moved to `docs/COVERAGE.md`.
 
 ```bash
 cargo llvm-cov --html
@@ -157,6 +157,19 @@ How to contribute:
 ## Performance
 
 A micro performance snapshot in `golden_equivalence.rs::performance_snapshot` runs 5 iterations on mixed‑script text vs Python. Numbers are indicative only; for robust measurement use Criterion benchmarks or larger corpora.
+
+## Repository layout
+
+```
+src/                # Core library sources + generated tables
+benches/            # Criterion or std benches (Rust)
+scripts/            # Developer helper scripts (bench_compare, coverage)
+tests/              # Rust integration & golden tests
+tests/python/       # Python parity & upstream harness
+docs/               # Coverage and performance documentation
+```
+
+`docs/PERFORMANCE_PLAN.md` details next-step performance ideas.
 
 ## Philosophy
 
