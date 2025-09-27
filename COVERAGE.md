@@ -8,11 +8,26 @@ We collect two kinds of coverage:
 
 ## Rust coverage
 
+Chemins fournis via alias cargo (voir `.cargo/config.toml`) pour homogénéité avec `slugify-rs`.
+
+### Rapide (HTML interactif)
+```bash
+cargo coverage
+```
+Ouvre un rapport HTML (exclut binaires selon regex d'ignore).
+
+### Format lcov pour CI / Codecov
+```bash
+cargo coverage-lcov
+```
+Produit `lcov.info` à la racine.
+
+### Manual (équivalent bas niveau)
 ```bash
 rustup component add llvm-tools-preview
-cargo install cargo-llvm-cov # once
-# Run instrumentation on tests
-cargo llvm-cov --lcov --output-path lcov.info
+cargo install cargo-llvm-cov # first time only
+cargo llvm-cov --package unidecode-rs --lcov --output-path lcov.info \
+	--ignore-filename-regex '/usr/src|/rustc-|src/bin/.*|bin/.*'
 ```
 
 ## Python coverage
@@ -30,14 +45,29 @@ Artifacts:
 - `coverage.xml` -> upload with Codecov flag `python`
 
 ## Combined view
-Codecov will merge both uploads (flags differentiate sources). Configure the
-`CODECOV_TOKEN` secret in the repository for private repos; public repos can
-omit the token.
+Codecov fusionne les uploads différenciés par flags (`rust`, `python`).
+Pour repo privé définir `CODECOV_TOKEN`; inutile pour public.
+
+Pipeline type (local):
+```bash
+./scripts/coverage.sh  # (après création du script, voir section suivante)
+```
 
 ## Adding new tests
 - Rust: prefer small deterministic unit tests in `tests/` or `#[cfg(test)]` modules.
 - Python: add integration / golden tests exercising edge code points.
 
 ## Next optimization stages
-Future performance improvements (bitset skip, dense block arrays) should be
-covered by adding benches plus golden test assertions to guard correctness.
+Les optimisations futures (skip bits, tables denses, vectorisation potentielle) doivent :
+- ajouter un bench Criterion dédié (régression perf) ;
+- enrichir les golden tests pour verrouiller la sortie ;
+- maintenir >50% couverture lignes cœur, viser >90% pour `lib.rs` (actuel ~98%).
+
+## Planned helper script
+Un script `scripts/coverage.sh` (non encore ajouté) pourra enchaîner :
+1. Installation venv Python + build extension
+2. Tests Python + `coverage.xml`
+3. `cargo coverage-lcov`
+4. Affichage résumé lignes / chemins ignorés
+
+Il reflétera la logique déjà adoptée dans `slugify-rs` pour uniformiser.

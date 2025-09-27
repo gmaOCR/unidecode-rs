@@ -1,0 +1,11 @@
+[alias]
+coverage = "llvm-cov --package unidecode-rs --html --ignore-filename-regex '/usr/src|/rustc-|src/bin/.*|bin/.*' --open"
+coverage-lcov = "llvm-cov --package unidecode-rs --lcov --output-path lcov.info --ignore-filename-regex '/usr/src|/rustc-|src/bin/.*|bin/.*'"
+
+[target.aarch64-apple-darwin]
+rustflags = [
+	"-C", "link-arg=-undefined",
+	"-C", "link-arg=dynamic_lookup",
+]
+# If you cross-compile locally with osxcross you may need to set a linker
+# linker = "o64-clang"
