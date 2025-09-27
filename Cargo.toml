@@ -36,6 +36,11 @@ features = ["extension-module"]
 
 [dev-dependencies]
 serde_json = "1.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "unidecode_bench"
+harness = false
 
 [package.metadata.maturin]
 bindings = "pyo3"
