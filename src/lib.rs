@@ -51,21 +51,22 @@ pub fn unidecode(input: &str) -> String { unidecode_with_policy(input, ErrorsPol
 pub enum ErrorsPolicy<'a> { Default, Ignore, Replace { replace: &'a str }, Preserve, Strict, Invalid }
 
 /// Internal result carrying optional failure index for strict/invalid.
-struct TransliterationResult { out: String, error_index: Option<usize> }
+struct TransliterationResult(String, Option<usize>);
 
 fn unidecode_with_policy(input: &str, policy: ErrorsPolicy<'_>) -> String {
-    match transliterate_internal(input, policy) { TransliterationResult { out, .. } => out }
+    let TransliterationResult(out, _) = transliterate_internal(input, policy);
+    out
 }
 
 /// Version returning a result used by Python binding for strict mode.
 pub(crate) fn unidecode_with_policy_result(input: &str, policy: ErrorsPolicy<'_>) -> Result<String, usize> {
-    let r = transliterate_internal(input, policy);
-    if let Some(idx) = r.error_index { return Err(idx); }
-    Ok(r.out)
+    let TransliterationResult(out, err) = transliterate_internal(input, policy);
+    if let Some(idx) = err { return Err(idx); }
+    Ok(out)
 }
 
 fn transliterate_internal(input: &str, policy: ErrorsPolicy<'_>) -> TransliterationResult {
-    if input.is_ascii() { return TransliterationResult { out: input.to_string(), error_index: None }; }
+    if input.is_ascii() { return TransliterationResult(input.to_string(), None); }
 
     // Pass 1: estimate resulting length (ignoring Replace / Preserve nuances for simplicity).
     let mut estimated = 0usize;
@@ -114,17 +115,16 @@ fn transliterate_internal(input: &str, policy: ErrorsPolicy<'_>) -> Transliterat
                 ErrorsPolicy::Replace { replace } => { out.push_str(replace); }
                 ErrorsPolicy::Preserve | ErrorsPolicy::Invalid => { out.push(ch); }
                 ErrorsPolicy::Strict => {
-                    return TransliterationResult { out, error_index: Some(char_index) };
+                    return TransliterationResult(out, Some(char_index));
                 }
             }
             char_index += 1;
         }
     }
-    TransliterationResult { out, error_index: None }
+    TransliterationResult(out, None)
 }
 
-/// Legacy alias kept for internal compatibility.
-pub fn unidecode_rust(input: &str) -> String { unidecode(input) }
+// (legacy alias removed)
 
 #[cfg(test)]
 mod tests {
@@ -134,6 +134,8 @@ mod tests {
     fn simple() {
         assert_eq!(unidecode("déjà"), "deja");
     }
+
+      // (legacy alias test removed)
 
     #[test]
     fn lookup_out_of_range_block() {
@@ -231,13 +233,51 @@ mod tests {
     fn errors_strict() {
         let s = "😀a"; // first char unmapped -> error index 0
         let res = transliterate_internal(s, ErrorsPolicy::Strict);
-        assert_eq!(res.error_index, Some(0));
+    assert_eq!(res.1, Some(0));
         // Ensure partial output (should be empty since first char failed)
-        assert_eq!(res.out, "");
+    assert_eq!(res.0, "");
         // If first char mapped, second unmapped -> index 1
         let s2 = "é😀"; // 'é' maps to 'e'
         let res2 = transliterate_internal(s2, ErrorsPolicy::Strict);
-        assert_eq!(res2.error_index, Some(1));
-        assert_eq!(res2.out, "e");
+    assert_eq!(res2.1, Some(1));
+    assert_eq!(res2.0, "e");
     }
+
+      #[test]
+      fn strict_index_after_ascii_run_and_multibyte() {
+          // ASCII fast run + mapped multibyte + unmapped emoji => error index counts chars, not bytes.
+          let s = "abcé😀"; // 'abc' (3 chars) + 'é' (1) + emoji (unmapped)
+          let res = transliterate_internal(s, ErrorsPolicy::Strict);
+          // Indices: a=0 b=1 c=2 é=3 😀=4 (fails at 4)
+          assert_eq!(res.1, Some(4));
+          // Output should contain mapped 'e' for 'é' plus the ascii prefix
+          assert_eq!(res.0, "abce");
+      }
+
+      // --- Additional coverage-focused tests (internal branches) ---
+
+      #[test]
+      fn override_binary_search_misses() {
+          // Exercise binary search paths where cp < first element and cp > last element.
+          assert!(lookup_override(0x1D3FF).is_none(), "value just before table should miss");
+          assert!(lookup_override(0x1D7D9).is_none(), "value just after table should miss");
+      }
+
+      #[test]
+      fn unidecode_with_policy_result_ok_err() {
+          // Success path: mapped character returns Ok.
+          let ok = unidecode_with_policy_result("é", ErrorsPolicy::Default).expect("expected Ok result");
+          assert_eq!(ok, "e");
+          // Error path: Strict policy returns Err(index) on first unmapped codepoint.
+          let err_index = unidecode_with_policy_result("😀a", ErrorsPolicy::Strict).unwrap_err();
+          assert_eq!(err_index, 0);
+      }
+
+      #[test]
+      fn all_unmapped_estimation_zero_path() {
+          // Two unmapped emoji under Default policy => estimation loop accumulates 0 and triggers fallback (line 87).
+          let s = "😀😁";
+          let out = unidecode_with_policy(s, ErrorsPolicy::Default);
+          assert_eq!(out, "", "all unmapped should produce empty output under Default policy");
+      }
 }

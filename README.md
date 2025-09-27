@@ -1,7 +1,11 @@
 # unidecode-rs — Unicode → ASCII transliteration faithful to Python
 
 [![CI](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/unidecode-rs.svg)](https://crates.io/crates/unidecode-rs)
+[![Docs](https://docs.rs/unidecode-rs/badge.svg)](https://docs.rs/unidecode-rs)
 [![Coverage](https://codecov.io/gh/gmaOCR/unidecode-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/gmaOCR/unidecode-rs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python Wheels](https://img.shields.io/badge/python-wheels-blue)](https://pypi.org/project/Unidecode/) <!-- placeholder until own wheel published -->
 
 Fast Rust implementation (optional Python bindings via PyO3) targeting bit‑for‑bit equivalence with Python [Unidecode]. Provides:
 
