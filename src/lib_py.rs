@@ -2,31 +2,41 @@
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::wrap_pyfunction;
+#[cfg(feature = "python")]
+use pyo3::{create_exception, exceptions::PyException};
+
+// Define custom exception at module level so we can construct it easily.
+#[cfg(feature = "python")]
+create_exception!(unidecode_rs, UnidecodeError, PyException);
 
 #[cfg(feature = "python")]
-#[pyfunction(text_signature = "(text, errors=None, replace_str=None)")]
+#[pyfunction(signature = (text, errors=None, replace_str=None), text_signature = "(text, errors=None, replace_str=None)")]
 /// Transliterates a Unicode string to ASCII (mirror of Python `unidecode.unidecode`).
-/// Always returns pure ASCII; function is idempotent.
 ///
 /// Parameters
 /// ----------
 /// text : str
 ///     Input Unicode text.
 /// errors : Optional[str]
-///     Placeholder for future compatibility (e.g. "ignore", "strict"). Currently
-///     not implemented; passing any non-None value raises NotImplementedError.
+///     One of: "ignore" (drop unmapped), "replace" (use `replace_str` or '?'),
+///     "strict" (raise UnidecodeError), "preserve" (keep original char),
+///     "invalid" (alias of preserve), or None/"" (default == ignore).
+/// replace_str : Optional[str]
+///     Replacement string when `errors="replace"` (default '?').
 ///
 /// Returns
 /// -------
 /// str
-///     ASCII transliteration.
+///     Transliteration (ASCII except in preserve/invalid modes where original
+///     unmapped chars are emitted as-is).
 ///
 /// Raises
 /// ------
-/// NotImplementedError
-///     If `errors` is not None.
-fn unidecode(input: &str, errors: Option<&str>, replace_str: Option<&str>) -> PyResult<String> {
-    use crate::{ErrorsPolicy};
+/// UnidecodeError
+///     If `errors="strict"` and an unmapped character is encountered. The
+///     exception exposes an `index` attribute giving the character index.
+fn unidecode(text: &str, errors: Option<&str>, replace_str: Option<&str>) -> PyResult<String> {
+    use crate::ErrorsPolicy;
     let policy = match errors.unwrap_or("") {
         "" => ErrorsPolicy::Default,
         "ignore" => ErrorsPolicy::Ignore,
@@ -35,23 +45,27 @@ fn unidecode(input: &str, errors: Option<&str>, replace_str: Option<&str>) -> Py
             ErrorsPolicy::Replace { replace: rep }
         }
         "preserve" => ErrorsPolicy::Preserve,
-        "strict" => ErrorsPolicy::Strict,
         "invalid" => ErrorsPolicy::Invalid,
+        "strict" => ErrorsPolicy::Strict,
         other => return Err(pyo3::exceptions::PyValueError::new_err(format!("unknown errors policy: {other}")))
     };
-    // For now only run default implementation; strict/invalid behave same until backend extended.
-    let out = crate::unidecode_with_policy(input, policy);
-    Ok(out)
+    match crate::unidecode_with_policy_result(text, policy) {
+        Ok(s) => Ok(s),
+        Err(idx) => {
+            // Create error instance, attach index attribute, raise.
+            let mut err = UnidecodeError::new_err("unidecode strict error");
+            Python::with_gil(|py| {
+                let _ = err.value(py).setattr("index", idx);
+            });
+            Err(err)
+        }
+    }
 }
 
 #[cfg(feature = "python")]
 #[pymodule]
 fn unidecode_rs(py: Python, m: &pyo3::prelude::Bound<pyo3::types::PyModule>) -> PyResult<()> {
-    #[pyclass(module = "unidecode_rs", name = "UnidecodeError")]
-    struct UnidecodeError { #[pyo3(get)] index: usize }
-    #[pymethods]
-    impl UnidecodeError { #[new] fn new(index: usize) -> Self { Self { index } } }
-    m.add_class::<UnidecodeError>()?;
+    m.add("UnidecodeError", py.get_type::<UnidecodeError>())?;
     m.add_function(wrap_pyfunction!(unidecode, m)?)?;
     let version = env!("CARGO_PKG_VERSION");
     m.setattr("__version__", version)?;

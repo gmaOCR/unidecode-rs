@@ -57,75 +57,67 @@ fn unidecode_with_policy(input: &str, policy: ErrorsPolicy<'_>) -> String {
     match transliterate_internal(input, policy) { TransliterationResult { out, .. } => out }
 }
 
+/// Version returning a result used by Python binding for strict mode.
+pub(crate) fn unidecode_with_policy_result(input: &str, policy: ErrorsPolicy<'_>) -> Result<String, usize> {
+    let r = transliterate_internal(input, policy);
+    if let Some(idx) = r.error_index { return Err(idx); }
+    Ok(r.out)
+}
+
 fn transliterate_internal(input: &str, policy: ErrorsPolicy<'_>) -> TransliterationResult {
     if input.is_ascii() { return TransliterationResult { out: input.to_string(), error_index: None }; }
-    // (ASCII fast path handled above)
 
-    // Pass 1: estimate resulting length & collect ASCII runs cheaply.
-    // We walk UTF-8 decoding minimally using .chars() (still efficient) but track expansion sizes.
-    // For now we approximate expansion length as len(mapping) else 0 (or 1 for ASCII). This avoids
-    // repeated reallocations for CJK multi-letter expansions.
+    // Pass 1: estimate resulting length (ignoring Replace / Preserve nuances for simplicity).
     let mut estimated = 0usize;
     for ch in input.chars() {
         let cp = ch as u32;
-        // Manual overrides for Mathematical Script / edge codepoints not yet generated.
-        // U+1D4E3 MATHEMATICAL SCRIPT SMALL T (expected 'T' in upstream tests)
-    if let Some(s) = lookup_override(cp) { estimated += s.len(); continue; }
+        if let Some(s) = lookup_override(cp) { estimated += s.len(); continue; }
         if cp < 0x100 {
-            if cp < 0x80 { // ASCII
-                estimated += 1;
-            } else if let Some(s) = unidecode_table::lookup_0_255(cp) {
-                estimated += s.len();
-            }
-        } else if let Some(s) = unidecode_table::lookup(cp) {
-            estimated += s.len();
-        } else {
-            #[cfg(feature = "fallback-deunicode")]
-            {
-                let s = deunicode(&ch.to_string());
-                estimated += s.len();
+            if cp < 0x80 { estimated += 1; }
+            else if let Some(s) = unidecode_table::lookup_0_255(cp) { estimated += s.len(); }
+        } else if let Some(s) = unidecode_table::lookup(cp) { estimated += s.len(); }
+        else {
+            match policy {
+                ErrorsPolicy::Replace { replace } => estimated += replace.len(),
+                ErrorsPolicy::Preserve | ErrorsPolicy::Invalid => estimated += ch.len_utf8(),
+                _ => {} // Default / Ignore / Strict drop for now
             }
         }
     }
-    if estimated == 0 { // Should not happen, fallback safety
-        estimated = input.len();
-    }
+    if estimated == 0 { estimated = input.len(); }
 
     let mut out = String::with_capacity(estimated);
+    let mut char_index = 0usize; // index in chars for strict error reporting
 
-    // Pass 2: perform transliteration using ASCII run batching.
-    // We iterate over bytes to copy contiguous ASCII slices, and when a non-ASCII byte is met we
-    // decode the char(s) from that position.
     let bytes = input.as_bytes();
     let mut i = 0usize;
     while i < bytes.len() {
-        // Copy contiguous ASCII run.
         if bytes[i].is_ascii() {
-            let start = i;
-            i += 1;
-            while i < bytes.len() && bytes[i].is_ascii() { i += 1; }
-            // Safety: slice is valid ASCII subset.
+            let start = i; i += 1; while i < bytes.len() && bytes[i].is_ascii() { i += 1; }
             out.push_str(&input[start..i]);
+            // count chars in run
+            char_index += input[start..i].chars().count();
             continue;
         }
-
-        // Decode one UTF-8 char from position i. Safe because input is valid UTF-8.
         let ch = input[i..].chars().next().unwrap();
         i += ch.len_utf8();
         let cp = ch as u32;
-    if let Some(s) = lookup_override(cp) { out.push_str(s); continue; }
+        if let Some(s) = lookup_override(cp) { out.push_str(s); char_index += 1; continue; }
         if cp < 0x100 {
-            if cp < 0x80 { out.push(ch); continue; }
-            if let Some(s) = unidecode_table::lookup_0_255(cp) { out.push_str(s); continue; }
+            if cp < 0x80 { out.push(ch); char_index += 1; continue; }
+            if let Some(s) = unidecode_table::lookup_0_255(cp) { out.push_str(s); char_index += 1; continue; }
         }
-        if let Some(s) = unidecode_table::lookup(cp) {
-            out.push_str(s);
-        } else {
-            #[cfg(feature = "fallback-deunicode")]
-            {
-                let s = deunicode(&ch.to_string());
-                if !s.is_empty() { out.push_str(&s); }
+        if let Some(s) = unidecode_table::lookup(cp) { out.push_str(s); char_index += 1; }
+        else {
+            match policy {
+                ErrorsPolicy::Default | ErrorsPolicy::Ignore => { /* skip */ }
+                ErrorsPolicy::Replace { replace } => { out.push_str(replace); }
+                ErrorsPolicy::Preserve | ErrorsPolicy::Invalid => { out.push(ch); }
+                ErrorsPolicy::Strict => {
+                    return TransliterationResult { out, error_index: Some(char_index) };
+                }
             }
+            char_index += 1;
         }
     }
     TransliterationResult { out, error_index: None }
@@ -205,5 +197,47 @@ mod tests {
             let twice = unidecode(&once); 
             assert_eq!(once, twice, "idempotence failed for {:?}", s); 
         }
+    }
+
+    #[test]
+    fn errors_ignore_default() {
+        // Choose characters unlikely to have mapping -> fallback removal under ignore.
+        let s = "😀"; // emoji not in current tables
+        let r = unidecode_with_policy(s, ErrorsPolicy::Ignore);
+        assert_eq!(r, "");
+        let r2 = unidecode_with_policy(s, ErrorsPolicy::Default);
+        assert_eq!(r2, "");
+    }
+
+    #[test]
+    fn errors_replace() {
+        let s = "😀";
+        let r = unidecode_with_policy(s, ErrorsPolicy::Replace { replace: "?" });
+        assert_eq!(r, "?");
+        let r2 = unidecode_with_policy(s, ErrorsPolicy::Replace { replace: "[x]" });
+        assert_eq!(r2, "[x]");
+    }
+
+    #[test]
+    fn errors_preserve() {
+        let s = "😀"; // preserved as original
+        let r = unidecode_with_policy(s, ErrorsPolicy::Preserve);
+        assert_eq!(r, s);
+        let inv = unidecode_with_policy(s, ErrorsPolicy::Invalid);
+        assert_eq!(inv, s);
+    }
+
+    #[test]
+    fn errors_strict() {
+        let s = "😀a"; // first char unmapped -> error index 0
+        let res = transliterate_internal(s, ErrorsPolicy::Strict);
+        assert_eq!(res.error_index, Some(0));
+        // Ensure partial output (should be empty since first char failed)
+        assert_eq!(res.out, "");
+        // If first char mapped, second unmapped -> index 1
+        let s2 = "é😀"; // 'é' maps to 'e'
+        let res2 = transliterate_internal(s2, ErrorsPolicy::Strict);
+        assert_eq!(res2.error_index, Some(1));
+        assert_eq!(res2.out, "e");
     }
 }
