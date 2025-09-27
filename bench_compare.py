@@ -8,6 +8,7 @@ compare throughput for a large sample.
 import sys
 import time
 import subprocess
+import os
 from pathlib import Path
 
 
@@ -23,10 +24,25 @@ def main() -> None:
     sample = Path(__file__).with_name("sample.txt")
     text = prepare_sample(sample)
 
+    # If a local .venv exists and current interpreter is outside it,
+    # re-spawn inside so the built wheel installs in that environment.
+    venv_dir = Path(__file__).with_name('.venv')
+    if venv_dir.exists() and not str(sys.prefix).startswith(str(venv_dir)):
+        python_bin = venv_dir / 'bin' / 'python'
+        if python_bin.exists():
+            print(f"re-spawning inside existing venv: {python_bin}")
+            os.execv(python_bin.as_posix(), [python_bin.as_posix()] + sys.argv)
+
     print("installing build tools...")
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "--upgrade", "pip", "maturin"]
-    )
+    subprocess.check_call([
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "--upgrade",
+        "pip",
+        "maturin",
+    ])
     subprocess.check_call(
         [
             "maturin",

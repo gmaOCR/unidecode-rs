@@ -6,7 +6,7 @@ use pyo3::wrap_pyfunction;
 #[cfg(feature = "python")]
 #[pyfunction]
 fn unidecode(input: &str) -> PyResult<String> {
-    Ok(crate::unidecode_rust(input))
+    Ok(crate::unidecode(input))
 }
 
 #[cfg(feature = "python")]

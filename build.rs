@@ -4,9 +4,9 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
-    // Build-time script: interroge la bibliothèque Python Unidecode bloc par bloc (256 codepoints)
-    // et génère des fichiers `xx.rs` (où xx est l'offset du bloc en hex) dans src/unidecode_table/.
-    // Un `mod.rs` est ensuite écrit avec des modules mXX qui `include!` les fichiers.
+    // Build script: queries Python Unidecode block-by-block (256 code points per block)
+    // and generates `xx.rs` files (hex block prefix) under src/unidecode_table/ plus a
+    // dispatching mod.rs that exposes `lookup(cp)`.
 
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out_dir = crate_root.join("src").join("unidecode_table");
@@ -41,7 +41,7 @@ print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
         let stdout = if output.status.success() {
             output.stdout
         } else {
-            // try to install Unidecode and retry once
+            // Try to install Unidecode on demand and retry once.
             eprintln!("python extraction failed for block {:#x}; attempting pip install Unidecode", block);
             let install = Command::new(&python)
                 .arg("-m")
@@ -73,26 +73,76 @@ print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
 }
 
 fn write_mod_rs(out_dir: &Path) {
-    // Génère les modules mXX et un dispatcher vers BLOCK_XX
+    // Generate: per-block modules + a compact bitmap array for fast negative checks.
     let mut mod_lines = String::from("// Auto-generated. Do not edit manually.\n");
-    let mut dispatcher = String::from("pub fn lookup(cp: u32) -> Option<&'static str> {\n    match cp >> 8 {\n");
+    mod_lines.push_str("// Each block: 256 code points. BITMAP[block][byte] bit set => mapping present.\n");
+
+    // Build bitmap vector
+    let mut bitmaps: Vec<[u8; 32]> = Vec::new(); // 256 bits = 32 bytes
+    for block in 0u32..0x110u32 {
+        let fname = format!("{:02x}.rs", block);
+        if out_dir.join(&fname).exists() {
+            // Extract keys from the generated file to set bits (parse lines with '=>')
+            let content = fs::read_to_string(out_dir.join(&fname)).expect("read block file");
+            let mut bits = [0u8; 32];
+            for line in content.lines() {
+                if let Some(pos) = line.find("=>") {
+                    let left = line[..pos].trim();
+                    if let Some(cp_str) = left.strip_suffix("u32") {
+                        let cp_trim = cp_str.trim();
+                        if let Ok(cp) = cp_trim.parse::<u32>() {
+                            let low = cp & 0xFF; // position inside block
+                            let byte = (low / 8) as usize;
+                            let bit = (low % 8) as u8;
+                            bits[byte] |= 1 << bit;
+                        }
+                    }
+                }
+            }
+            bitmaps.push(bits);
+            mod_lines.push_str(&format!("pub mod m{:02x} {{ include!(\"./{:02x}.rs\"); }}\n", block, block));
+        } else {
+            bitmaps.push([0u8; 32]);
+        }
+    }
+
+    // Emit bitmap static
+    mod_lines.push_str("pub static BLOCK_BITMAPS: &[[u8;32]] = &[\n");
+    for bits in &bitmaps {
+        mod_lines.push_str("    [");
+        for (i, b) in bits.iter().enumerate() {
+            if i > 0 { mod_lines.push(','); }
+            mod_lines.push_str(&format!("0x{:02x}", b));
+        }
+        mod_lines.push_str("],\n");
+    }
+    mod_lines.push_str("];\n");
+
+    // Dispatcher using bitmap fast negative check
+    mod_lines.push_str(r#"pub fn lookup(cp: u32) -> Option<&'static str> {
+    let block = (cp >> 8) as usize;
+    if block >= BLOCK_BITMAPS.len() { return None; }
+    let idx = (cp & 0xFF) as u32;
+    let b = BLOCK_BITMAPS[block];
+    let byte = (idx / 8) as usize;
+    let bit = (idx % 8) as u8;
+    if (b[byte] & (1 << bit)) == 0 { return None; }
+    match block {
+"#);
 
     for block in 0u32..0x110u32 {
         let fname = format!("{:02x}.rs", block);
         if out_dir.join(&fname).exists() {
-            mod_lines.push_str(&format!("pub mod m{:02x} {{ include!(\"./{:02x}.rs\"); }}\n", block, block));
-            dispatcher.push_str(&format!(
+            mod_lines.push_str(&format!(
                 "        0x{:x} => m{:02x}::BLOCK_{:02X}.get(&cp).copied(),\n",
                 block, block, block
             ));
         }
     }
+    mod_lines.push_str("        _ => None,\n    }\n}\n");
 
-    dispatcher.push_str("        _ => None,\n    }\n}\n");
-    let content = format!("{}\n{}", mod_lines, dispatcher);
-    fs::write(out_dir.join("mod.rs"), content).expect("failed to write unidecode_table/mod.rs");
+    fs::write(out_dir.join("mod.rs"), mod_lines).expect("failed to write unidecode_table/mod.rs");
 }
-
 fn write_block(out_dir: &Path, block: u32, json_text: &str) {
     let v: serde_json::Value = match serde_json::from_str(json_text) {
         Ok(v) => v,
@@ -103,7 +153,7 @@ fn write_block(out_dir: &Path, block: u32, json_text: &str) {
         None => return,
     };
     if obj.is_empty() {
-        let _ = fs::remove_file(out_dir.join(format!("{:02x}.rs", block))); // nettoyer ancien
+    let _ = fs::remove_file(out_dir.join(format!("{:02x}.rs", block))); // remove stale empty block file if present
         return;
     }
 
