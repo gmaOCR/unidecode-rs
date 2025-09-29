@@ -17,6 +17,7 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 deunicode = "0.4"
 phf = { version = "0.10", features = ["macros"] }
+unicode-normalization = "0.1"
 
 [build-dependencies]
 serde_json = "1.0"
