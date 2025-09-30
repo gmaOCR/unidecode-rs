@@ -47,3 +47,4 @@ harness = false
 [package.metadata.maturin]
 bindings = "pyo3"
 module-name = "unidecode_rs"
+requires = ["cffi"]

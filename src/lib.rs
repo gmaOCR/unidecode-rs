@@ -149,6 +149,7 @@ pub enum ErrorsPolicy<'a> {
 }
 
 /// Internal result carrying optional failure index for strict/invalid.
+#[allow(dead_code)]
 struct TransliterationResult(String, Option<usize>);
 
 fn unidecode_with_policy(input: &str, policy: ErrorsPolicy<'_>) -> String {
@@ -157,6 +158,7 @@ fn unidecode_with_policy(input: &str, policy: ErrorsPolicy<'_>) -> String {
 }
 
 /// Version returning a result used by Python binding for strict mode.
+#[cfg(feature = "python")]
 pub(crate) fn unidecode_with_policy_result(
     input: &str,
     policy: ErrorsPolicy<'_>,

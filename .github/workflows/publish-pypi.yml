@@ -6,7 +6,15 @@ on:
       - 'v*.*.*'
   release:
     types: [published]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      use_pypi_secret:
+        description: 'If set to true, use the repository secret PYPI_API_TOKEN instead of OIDC'
+        required: false
+        default: 'auto'
+      publish_tag:
+        description: 'Optional: tag to publish (when manually dispatching). If omitted, the workflow uses the current ref.'
+        required: false
 
 jobs:
   pypi-publish:
@@ -16,7 +24,16 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout requested tag (if provided)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag != '' }}
+        run: |
+          git fetch --tags --prune
+          git checkout "${{ github.event.inputs.publish_tag }}"
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -40,10 +57,29 @@ jobs:
         run: |
           sudo apt-get update -y && sudo apt-get install -y jq || true
 
+      - name: Detect PYPI secret
+        id: detect-secret
+        run: |
+          # Allow override from workflow_dispatch input: auto | true | false
+          input_override="${{ github.event.inputs.use_pypi_secret }}"
+          if [ -z "$input_override" ] || [ "$input_override" = "auto" ]; then
+            # Determine whether the repository secret PYPI_API_TOKEN is present
+            if [ -n "${{ secrets.PYPI_API_TOKEN }}" ]; then
+              echo "use_secret=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "use_secret=false" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "$input_override" = "true" ]; then
+            echo "use_secret=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_secret=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Mint PyPI API token (debug)
+        if: ${{ steps.detect-secret.outputs.use_secret == 'false' }}
         id: mint-token
         run: |
-          # Retrieve OIDC token (runner provides request token in environment)
+          # No repository secret provided, attempt OIDC exchange for a short-lived PyPI token
           resp=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
           echo "oidc response: $(echo $resp | jq -c '.')"
           oidc_token=$(echo "$resp" | jq -r '.value')
@@ -57,12 +93,20 @@ jobs:
           echo "mint_resp: $(echo $mint_resp | jq -c '.')"
           echo "api-token=$(echo $mint_resp | jq -r '.token')" >> "$GITHUB_OUTPUT"
 
+      - name: Prepare publish token
+        id: publish-token
+        run: |
+          if [ "${{ steps.detect-secret.outputs.use_secret }}" = "true" ]; then
+            echo "api-token=${{ secrets.PYPI_API_TOKEN }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "api-token=${{ steps.mint-token.outputs.api-token }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
-          password: ${{ steps.mint-token.outputs.api-token }}
+          password: ${{ steps.publish-token.outputs.api-token }}
 
-      - name: Reminder: configure Trusted Publisher on PyPI (manual)
+      - name: "Reminder: configure Trusted Publisher on PyPI (manual)"
         run: |
           echo "If this is the first run, visit https://pypi.org/manage/project/unidecode-rs/settings/publishing/?provider=github to add this repository as a Trusted Publisher."
