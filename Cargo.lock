@@ -882,7 +882,7 @@ dependencies = [
 
 [[package]]
 name = "unidecode-rs"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "criterion",
  "deunicode 0.4.5",

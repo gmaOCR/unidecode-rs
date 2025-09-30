@@ -41,6 +41,10 @@ jobs:
       - name: Rust format check
         run: cargo fmt --all -- --check
 
+      - name: Ensure clippy is installed
+        run: |
+          rustup component add clippy || true
+
       - name: Rust clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 

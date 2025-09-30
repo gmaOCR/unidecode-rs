@@ -10,7 +10,11 @@ mod lib_py;
 // relying on standard module discovery so stale files cannot interfere.
 // The generated `unidecode_table` contains large static arrays and casts
 // which can trigger clippy lints; silence them for the included module.
-#[allow(dead_code, clippy::redundant_static_lifetimes, clippy::unnecessary_cast)]
+#[allow(
+    dead_code,
+    clippy::redundant_static_lifetimes,
+    clippy::unnecessary_cast
+)]
 mod unidecode_table {
     include!(concat!(
         env!("CARGO_MANIFEST_DIR"),

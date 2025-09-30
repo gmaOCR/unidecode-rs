@@ -1,6 +1,6 @@
 [package]
 name = "unidecode-rs"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
 authors = ["greg <greg@gregorymariani.com>"]
 description = "Rust-backed transliteration similar to Python Unidecode, with optional PyO3 bindings for Python"

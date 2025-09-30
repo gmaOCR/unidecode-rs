@@ -36,6 +36,10 @@ jobs:
           # Build manylinux2014 wheels so PyPI accepts the binary platform tag
           ./.venv/bin/maturin build --release --manylinux 2014 -o dist/
 
+      - name: Ensure jq is available
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq || true
+
       - name: Mint PyPI API token (debug)
         id: mint-token
         run: |
@@ -56,4 +60,9 @@ jobs:
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          user: __token__
           password: ${{ steps.mint-token.outputs.api-token }}
+
+      - name: Reminder: configure Trusted Publisher on PyPI (manual)
+        run: |
+          echo "If this is the first run, visit https://pypi.org/manage/project/unidecode-rs/settings/publishing/?provider=github to add this repository as a Trusted Publisher."
