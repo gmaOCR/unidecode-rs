@@ -17,29 +17,6 @@ create_exception!(unidecode_rs, UnidecodeError, PyException);
 // generated types.
 #[pyfunction(signature = (string, errors=None, replace_str=None), text_signature = "(string, errors=None, replace_str=None)")]
 /// Transliterates a Unicode string to ASCII (mirror of Python `unidecode.unidecode`).
-///
-/// Parameters
-/// ----------
-/// text : str
-///     Input Unicode text.
-/// errors : Optional[str]
-///     One of: "ignore" (drop unmapped), "replace" (use `replace_str` or '?'),
-///     "strict" (raise UnidecodeError), "preserve" (keep original char),
-///     "invalid" (alias of preserve), or None/"" (default == ignore).
-/// replace_str : Optional[str]
-///     Replacement string when `errors="replace"` (default '?').
-///
-/// Returns
-/// -------
-/// str
-///     Transliteration (ASCII except in preserve/invalid modes where original
-///     unmapped chars are emitted as-is).
-///
-/// Raises
-/// ------
-/// UnidecodeError
-///     If `errors="strict"` and an unmapped character is encountered. The
-///     exception exposes an `index` attribute giving the character index.
 fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> PyResult<String> {
     // Attempt to extract a Rust String from the Python object. If the Python
     // string contains unpaired surrogates, extraction may fail; in that case
@@ -54,8 +31,10 @@ fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> P
             ErrorsPolicy::Replace { replace: rep }
         }
         "preserve" => ErrorsPolicy::Preserve,
-        // Accept 'invalid' as historical alias of 'preserve' (keeps original char)
-        "invalid" => ErrorsPolicy::Preserve,
+        // 'invalid' should raise an UnidecodeError per upstream semantics.
+        "invalid" => {
+            return Err(UnidecodeError::new_err(format!("invalid value for errors parameter {:?}", "invalid")));
+        }
         "strict" => ErrorsPolicy::Strict,
         other => return Err(pyo3::exceptions::PyValueError::new_err(format!("unknown errors policy: {}", other)))
     };

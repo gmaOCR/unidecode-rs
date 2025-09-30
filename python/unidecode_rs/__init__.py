@@ -47,6 +47,23 @@ def unidecode(
     Signature matches upstream: (string, errors=None, replace_str=None)
     """
     assert _unidecode_impl is not None
+
+    # Match upstream behavior: 'invalid' should raise UnidecodeError
+    if errors == 'invalid':
+        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
+
+    # Handle surrogate code units on narrow builds: warn and remove them.
+    surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
+    if surrogate_count:
+        import warnings
+        for _ in range(surrogate_count):
+            warnings.warn(
+                "Surrogate character %r will be ignored. You might be using a narrow Python build.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        string = ''.join(ch for ch in string if not (0xd800 <= ord(ch) <= 0xdfff))
+
     return _unidecode_impl(string, errors, replace_str)
 
 
@@ -59,6 +76,18 @@ def unidecode_expect_ascii(
     string, errors, replace_str)
     """
     assert _unidecode_expect_ascii_impl is not None
+    if errors == 'invalid':
+        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
+    surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
+    if surrogate_count:
+        import warnings
+        for _ in range(surrogate_count):
+            warnings.warn(
+                "Surrogate character %r will be ignored. You might be using a narrow Python build.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        string = ''.join(ch for ch in string if not (0xd800 <= ord(ch) <= 0xdfff))
     return _unidecode_expect_ascii_impl(string, errors, replace_str)
 
 
@@ -71,4 +100,16 @@ def unidecode_expect_nonascii(
     string, errors, replace_str)
     """
     assert _unidecode_expect_nonascii_impl is not None
+    if errors == 'invalid':
+        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
+    surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
+    if surrogate_count:
+        import warnings
+        for _ in range(surrogate_count):
+            warnings.warn(
+                "Surrogate character %r will be ignored. You might be using a narrow Python build.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        string = ''.join(ch for ch in string if not (0xd800 <= ord(ch) <= 0xdfff))
     return _unidecode_expect_nonascii_impl(string, errors, replace_str)
