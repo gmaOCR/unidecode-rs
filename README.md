@@ -1,3 +1,106 @@
+# unidecode-rs
+
+Rust implementation of the Unidecode transliteration logic with optional
+PyO3 bindings to expose a drop-in replacement for the Python `unidecode`
+package.
+
+This repository contains:
+
+- `src/` — Rust implementation and PyO3 bindings (optional feature `python`).
+- `python/` — a small Python shim that provides upstream-compatible
+  signatures and forwards to the compiled extension when available.
+- `tests/` — Rust unit tests and a parity harness for upstream Python tests.
+- `bench/` — benchmark helpers comparing pure-Python `unidecode` vs the
+  compiled `unidecode-rs` extension.
+
+## Quickstart — Rust library usage
+
+Add `unidecode-rs` as a dependency in your `Cargo.toml` (example):
+
+```toml
+[dependencies]
+unidecode-rs = { git = "https://github.com/gmaOCR/unidecode-rs", tag = "v0.0.1" }
+```
+
+Then call the API from Rust:
+
+```rust
+use unidecode_rs::slugify; // example public function in this repo
+
+let out = unidecode_rs::unidecode("Héllo Wörld — café");
+println!("{}", out);
+```
+
+See `src/lib.rs` and `src/lib_py.rs` for additional exported functions.
+
+## Quickstart — Python users (drop-in replacement)
+
+If you want to replace the pure-Python `unidecode` package with the
+Rust-backed implementation (faster), follow these steps.
+
+1. Build and install the Python wheel using `maturin` (local develop):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip maturin
+cd unidecode-rs
+maturin develop --release --features python
+```
+
+This will build the compiled extension and install a small Python package
+that exposes the same API surface as upstream `unidecode`.
+
+2. Replace imports in your Python code
+
+If your code does `from unidecode import unidecode`, the recommended way is
+to install `unidecode-rs` into the same environment (see above). The
+repository also contains a small shim at `unidecode-rs/python/unidecode_rs`
+which ensures the exported callables use the same parameter names and raise
+the same exception types as upstream.
+
+3. Compatibility notes
+
+- The shim aims to provide identical function signatures and semantics to
+  the upstream `unidecode` including `errors` handling and surrogate
+  behavior. Where upstream behavior depends on narrow/broad Py builds we
+  mirror the upstream tests by warning and stripping surrogates.
+- If you need `inspect.signature` compatibility, the shim exposes the
+  textual signature `(string, errors=None, replace_str=None)` so tooling
+  that introspects signatures will work as expected.
+
+## Benchmarks
+
+See `bench/bench_unidecode_compare.py` — it compares call latency and
+throughput for representative inputs. During development the Rust
+implementation showed sizable speedups (multi‑x) vs the pure Python
+implementation for large inputs.
+
+## Publishing to PyPI (OIDC)
+
+This repository includes a GitHub Actions workflow to publish manylinux
+wheels to PyPI using OIDC token minting (no long-lived PyPI token in the
+repo). See `.github/workflows/publish-pypi.yml` for implementation. To
+publish:
+
+1. Tag a release on GitHub (e.g. `v1.2.3`) and push the tag.
+2. The workflow builds manylinux wheels using `maturin` and exchanges an
+   OIDC token for a short-lived PyPI API token (mint). The workflow then
+   uploads dists to PyPI.
+
+Note: see the workflow file for details and required runner permissions.
+
+## Development notes
+
+- Use `cargo test` for Rust unit tests.
+- Use `maturin develop --release --features python` to iterate on Python
+  bindings and local tests.
+- The repo contains a parity harness that runs the upstream `unidecode`
+  Python tests against this compiled extension to track functional parity.
+
+## License
+
+Distributed under the project license (see `LICENSE`).
 # unidecode-rs — Unicode → ASCII transliteration faithful to Python
 
 [![CI](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml)
@@ -5,7 +108,7 @@
 [![Docs](https://docs.rs/unidecode-rs/badge.svg)](https://docs.rs/unidecode-rs)
 [![Coverage](https://codecov.io/gh/gmaOCR/unidecode-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/gmaOCR/unidecode-rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python Wheels](https://img.shields.io/badge/python-wheels-blue)](https://pypi.org/project/Unidecode/) <!-- placeholder until own wheel published -->
+[![Python Wheels](https://img.shields.io/badge/python-wheels-blue)](https://pypi.org/project/Unidecode/) 
 
 Fast Rust implementation (optional Python bindings via PyO3) targeting bit‑for‑bit equivalence with Python [Unidecode]. Provides:
 

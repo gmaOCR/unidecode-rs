@@ -1,0 +1,59 @@
+name: Publish PyPI (OIDC)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+jobs:
+  pypi-publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install maturin
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install maturin
+
+      - name: Build wheels (maturin)
+        run: |
+          . .venv/bin/activate
+          # Build manylinux2014 wheels so PyPI accepts the binary platform tag
+          ./.venv/bin/maturin build --release --manylinux 2014 -o dist/
+
+      - name: Mint PyPI API token (debug)
+        id: mint-token
+        run: |
+          # Retrieve OIDC token (runner provides request token in environment)
+          resp=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
+          echo "oidc response: $(echo $resp | jq -c '.')"
+          oidc_token=$(echo "$resp" | jq -r '.value')
+          if [ -z "$oidc_token" ] || [ "$oidc_token" = "null" ]; then
+            echo "No OIDC token received" >&2
+            exit 1
+          fi
+          # Exchange for short-lived API token
+          mint_resp=$(curl -s -X POST https://pypi.org/_/oidc/mint-token -d "{\"token\": \"${oidc_token}\"}")
+          echo "::add-mask::${mint_resp}"
+          echo "mint_resp: $(echo $mint_resp | jq -c '.')"
+          echo "api-token=$(echo $mint_resp | jq -r '.token')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ steps.mint-token.outputs.api-token }}
