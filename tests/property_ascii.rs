@@ -1,10 +1,11 @@
 //! Property-based tests ensuring transliteration output constraints.
 use proptest::prelude::*;
 use unidecode_rs::unidecode;
-use unidecode_rs::ErrorsPolicy;
 
 // Helper invoking internal policy function via public API variants where possible.
-fn is_ascii(s: &str) -> bool { s.bytes().all(|b| b.is_ascii()) }
+fn is_ascii(s: &str) -> bool {
+    s.bytes().all(|b| b.is_ascii())
+}
 
 proptest! {
     #[test]

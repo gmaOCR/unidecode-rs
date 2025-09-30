@@ -33,19 +33,30 @@ fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> P
         "preserve" => ErrorsPolicy::Preserve,
         // 'invalid' should raise an UnidecodeError per upstream semantics.
         "invalid" => {
-            return Err(UnidecodeError::new_err(format!("invalid value for errors parameter {:?}", "invalid")));
+            return Err(UnidecodeError::new_err(format!(
+                "invalid value for errors parameter {:?}",
+                "invalid"
+            )));
         }
         "strict" => ErrorsPolicy::Strict,
-        other => return Err(pyo3::exceptions::PyValueError::new_err(format!("unknown errors policy: {}", other)))
+        other => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "unknown errors policy: {}",
+                other
+            )));
+        }
     };
     match crate::unidecode_with_policy_result(&string, policy) {
         Ok(s) => Ok(s),
         Err(idx) => {
             // Create error instance of UnidecodeError, attach index attribute, raise.
-            let mut err = UnidecodeError::new_err("unidecode strict error");
-            Python::with_gil(|py| {
-                let _ = err.value(py).setattr("index", idx);
-            });
+            let err = UnidecodeError::new_err("unidecode strict error");
+            #[allow(deprecated)]
+            {
+                Python::with_gil(|py| {
+                    let _ = err.value(py).setattr("index", idx);
+                });
+            }
             Err(err)
         }
     }

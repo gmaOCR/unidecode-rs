@@ -4,8 +4,7 @@
 //! Exécution: `cargo test -- --nocapture golden_equivalence` (python3 requis dans PATH).
 
 use std::process::Command;
-use std::time::Instant;
-use serde_json; // for JSON-safe string embedding
+use std::time::Instant; // for JSON-safe string embedding
 
 fn call_python_unidecode(s: &str) -> String {
     // Encode la chaîne en JSON pour éviter problèmes d'escapes Python.
@@ -48,17 +47,34 @@ except Exception as e:
     }
     let out = child.wait_with_output().expect("python wait");
     if !out.status.success() {
-        panic!("python failed (status {:?}):\nSTDERR:{}\nSTDOUT:{}", out.status.code(), String::from_utf8_lossy(&out.stderr), String::from_utf8_lossy(&out.stdout));
+        panic!(
+            "python failed (status {:?}):\nSTDERR:{}\nSTDOUT:{}",
+            out.status.code(),
+            String::from_utf8_lossy(&out.stderr),
+            String::from_utf8_lossy(&out.stdout)
+        );
     }
     let stdout = String::from_utf8(out.stdout).expect("non utf8 python output");
     let line = stdout.lines().last().unwrap_or("").trim();
     if line.is_empty() {
-        panic!("python returned empty output; stderr={} full_stdout={}", String::from_utf8_lossy(&out.stderr), stdout);
+        panic!(
+            "python returned empty output; stderr={} full_stdout={}",
+            String::from_utf8_lossy(&out.stderr),
+            stdout
+        );
     }
     let val: serde_json::Value = serde_json::from_str(line).expect("python emitted invalid JSON");
     if let Some(obj) = val.as_object() {
-        if let Some(ok) = obj.get("ok") { return ok.as_str().unwrap().to_string(); }
-        if let Some(err) = obj.get("error") { panic!("python script error type={:?} detail={:?}", err, obj.get("detail")); }
+        if let Some(ok) = obj.get("ok") {
+            return ok.as_str().unwrap().to_string();
+        }
+        if let Some(err) = obj.get("error") {
+            panic!(
+                "python script error type={:?} detail={:?}",
+                err,
+                obj.get("detail")
+            );
+        }
     }
     panic!("unexpected python json structure: {}", line);
 }
@@ -68,10 +84,10 @@ fn golden_equivalence() {
     let samples = [
         "ASCII plain text",
         "déjà vu — français",
-        "Добрый день", // cyrillique
+        "Добрый день",    // cyrillique
         "こんにちは世界", // japonais
-        "中文字符測試",  // chinois
-        "Έλληνες φίλοι", // grec
+        "中文字符測試",   // chinois
+        "Έλληνες φίλοι",  // grec
         "😀 emoji mix 👍 café",
         "한국어 테스트 문자열",
         "ภาษาไทยทดสอบ",
@@ -88,8 +104,9 @@ fn golden_equivalence() {
 #[test]
 fn performance_snapshot() {
     // Micro bench simple (non stable) juste indicatif dans la CI.
-    let text = "déjà vu — Français Русский текст 中文字符測試 한국어 테스트 😀 emoji こんにちは世界 "
-        .repeat(2000);
+    let text =
+        "déjà vu — Français Русский текст 中文字符測試 한국어 테스트 😀 emoji こんにちは世界 "
+            .repeat(2000);
 
     // Python timing
     let data_json = serde_json::to_string(&text).unwrap();
@@ -110,26 +127,39 @@ for _ in range(5):
     u(data)
 print(time.time()-start)"#;
     let py_start = Instant::now();
-    let mut bench_child = Command::new(std::env::var("PYTHON").unwrap_or_else(|_| "python3".into()))
-        .arg("-c")
-        .arg(py_code)
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .spawn()
-        .expect("python bench spawn");
+    let mut bench_child =
+        Command::new(std::env::var("PYTHON").unwrap_or_else(|_| "python3".into()))
+            .arg("-c")
+            .arg(py_code)
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .expect("python bench spawn");
     use std::io::Write as _;
-    if let Some(mut stdin) = bench_child.stdin.take() { stdin.write_all(data_json.as_bytes()).unwrap(); }
+    if let Some(mut stdin) = bench_child.stdin.take() {
+        stdin.write_all(data_json.as_bytes()).unwrap();
+    }
     let py_out = bench_child.wait_with_output().expect("python bench wait");
-    assert!(py_out.status.success(), "python bench stderr: {}", String::from_utf8_lossy(&py_out.stderr));
-    let py_reported: f64 = String::from_utf8(py_out.stdout).unwrap().trim().parse().unwrap_or_else(|_| {
-        eprintln!("warn: parse python timing fallback using wall clock");
-        py_start.elapsed().as_secs_f64()
-    });
+    assert!(
+        py_out.status.success(),
+        "python bench stderr: {}",
+        String::from_utf8_lossy(&py_out.stderr)
+    );
+    let py_reported: f64 = String::from_utf8(py_out.stdout)
+        .unwrap()
+        .trim()
+        .parse()
+        .unwrap_or_else(|_| {
+            eprintln!("warn: parse python timing fallback using wall clock");
+            py_start.elapsed().as_secs_f64()
+        });
 
     // Rust timing
     let rs_start = Instant::now();
-    for _ in 0..5 { let _ = unidecode_rs::unidecode(&text); }
+    for _ in 0..5 {
+        let _ = unidecode_rs::unidecode(&text);
+    }
     let rs_time = rs_start.elapsed().as_secs_f64();
 
     eprintln!(

@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion, black_box};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use unidecode_rs::unidecode;
 
 fn dataset_short() -> &'static str {
@@ -8,7 +8,10 @@ fn dataset_short() -> &'static str {
 fn dataset_medium() -> String {
     let base = "Pchnąć w tę łódź jeża lub ośm skrzyń fig"; // Polish pangram variant
     let mut s = String::with_capacity(4096);
-    for _ in 0..128 { s.push_str(base); s.push(' '); }
+    for _ in 0..128 {
+        s.push_str(base);
+        s.push(' ');
+    }
     s
 }
 
@@ -16,12 +19,17 @@ fn dataset_large() -> String {
     // Mix of scripts repeated
     let chunk = "Σὲ γνωρίζω ἀπὸ τὴν κόψη Съешь ещё этих мягких французских булок 😀 中文測試";
     let mut s = String::with_capacity(64 * 1024);
-    for _ in 0..512 { s.push_str(chunk); s.push(' '); }
+    for _ in 0..512 {
+        s.push_str(chunk);
+        s.push(' ');
+    }
     s
 }
 
 fn bench_unidecode(c: &mut Criterion) {
-    c.bench_function("short", |b| b.iter(|| unidecode(black_box(dataset_short()))));
+    c.bench_function("short", |b| {
+        b.iter(|| unidecode(black_box(dataset_short())))
+    });
 
     let med = dataset_medium();
     c.bench_function("medium", |b| b.iter(|| unidecode(black_box(&med))));

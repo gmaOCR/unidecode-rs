@@ -6,9 +6,24 @@ use unidecode_rs::unidecode;
 #[test]
 fn fractions_common() {
     let cases = [
-        ("¼", "1/4"), ("½", "1/2"), ("¾", "3/4"), ("⅐", "1/7"), ("⅑", "1/9"), ("⅒", "1/10"),
-        ("⅓", "1/3"), ("⅔", "2/3"), ("⅕", "1/5"), ("⅖", "2/5"), ("⅗", "3/5"), ("⅘", "4/5"),
-        ("⅙", "1/6"), ("⅚", "5/6"), ("⅛", "1/8"), ("⅜", "3/8"), ("⅝", "5/8"), ("⅞", "7/8"),
+        ("¼", "1/4"),
+        ("½", "1/2"),
+        ("¾", "3/4"),
+        ("⅐", "1/7"),
+        ("⅑", "1/9"),
+        ("⅒", "1/10"),
+        ("⅓", "1/3"),
+        ("⅔", "2/3"),
+        ("⅕", "1/5"),
+        ("⅖", "2/5"),
+        ("⅗", "3/5"),
+        ("⅘", "4/5"),
+        ("⅙", "1/6"),
+        ("⅚", "5/6"),
+        ("⅛", "1/8"),
+        ("⅜", "3/8"),
+        ("⅝", "5/8"),
+        ("⅞", "7/8"),
     ];
     for (inp, exp) in cases {
         let raw = unidecode(inp);
@@ -22,8 +37,16 @@ fn roman_numerals() {
     let s = "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯ"; // U+2160.. range subset
     let out = unidecode(s);
     // Relax expectations: ensure only Roman letters and length within plausible bounds.
-    assert!(out.chars().all(|c| matches!(c, 'I'|'V'|'X'|'L'|'C'|'D'|'M')));
-    assert!(out.len() >= 15 && out.len() <= 40, "unexpected length {} for {}", out.len(), out);
+    assert!(
+        out.chars()
+            .all(|c| matches!(c, 'I' | 'V' | 'X' | 'L' | 'C' | 'D' | 'M'))
+    );
+    assert!(
+        out.len() >= 15 && out.len() <= 40,
+        "unexpected length {} for {}",
+        out.len(),
+        out
+    );
 }
 
 #[test]
@@ -56,6 +79,9 @@ fn musical_symbols_subset() {
     // These may be unmapped currently; assert ASCII + stability (no panic, may be empty)
     let symbols = [0x1D100u32, 0x1D11E, 0x1D122];
     for cp in symbols {
-        if let Some(ch) = char::from_u32(cp) { let out = unidecode(&ch.to_string()); assert!(out.is_ascii()); }
+        if let Some(ch) = char::from_u32(cp) {
+            let out = unidecode(&ch.to_string());
+            assert!(out.is_ascii());
+        }
     }
 }

@@ -24,7 +24,8 @@ fn main() {
         let start = block << 8;
         let end = ((block + 1) << 8) - 1;
 
-        let py_code = format!(r#"import json,sys
+        let py_code = format!(
+            r#"import json,sys
 from unidecode import unidecode as _u
 out={{}}
 for cp in range({start},{end}+1):
@@ -33,7 +34,10 @@ for cp in range({start},{end}+1):
     if s:
         out[cp]=s
 sys.stdout.reconfigure(encoding='utf-8')
-print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
+print(json.dumps(out, ensure_ascii=False))"#,
+            start = start,
+            end = end
+        );
 
         let output = Command::new(&python)
             .arg("-c")
@@ -45,7 +49,10 @@ print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
             output.stdout
         } else {
             // Try to install Unidecode on demand and retry once.
-            eprintln!("python extraction failed for block {:#x}; attempting pip install Unidecode", block);
+            eprintln!(
+                "python extraction failed for block {:#x}; attempting pip install Unidecode",
+                block
+            );
             let install = Command::new(&python)
                 .arg("-m")
                 .arg("pip")
@@ -78,7 +85,9 @@ print(json.dumps(out, ensure_ascii=False))"#, start = start, end = end);
 fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     // Generate: per-block modules + a compact bitmap array for fast negative checks.
     let mut mod_lines = String::from("// Auto-generated. Do not edit manually.\n");
-    mod_lines.push_str("// Each block: 256 code points. BITMAP[block][byte] bit set => mapping present.\n");
+    mod_lines.push_str(
+        "// Each block: 256 code points. BITMAP[block][byte] bit set => mapping present.\n",
+    );
 
     // Build bitmap vector
     let mut bitmaps: Vec<[u8; 32]> = Vec::new(); // 256 bits = 32 bytes
@@ -103,7 +112,10 @@ fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
                 }
             }
             bitmaps.push(bits);
-            mod_lines.push_str(&format!("pub mod m{:02x} {{ include!(\"./{:02x}.rs\"); }}\n", block, block));
+            mod_lines.push_str(&format!(
+                "pub mod m{:02x} {{ include!(\"./{:02x}.rs\"); }}\n",
+                block, block
+            ));
         } else {
             bitmaps.push([0u8; 32]);
         }
@@ -114,7 +126,9 @@ fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     for bits in &bitmaps {
         mod_lines.push_str("    [");
         for (i, b) in bits.iter().enumerate() {
-            if i > 0 { mod_lines.push(','); }
+            if i > 0 {
+                mod_lines.push(',');
+            }
             mod_lines.push_str(&format!("0x{:02x}", b));
         }
         mod_lines.push_str("],\n");
@@ -122,7 +136,8 @@ fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     mod_lines.push_str("];\n");
 
     // Dispatcher using bitmap fast negative check
-    mod_lines.push_str(r#"pub fn lookup(cp: u32) -> Option<&'static str> {
+    mod_lines.push_str(
+        r#"pub fn lookup(cp: u32) -> Option<&'static str> {
     let block = (cp >> 8) as usize;
     if block >= BLOCK_BITMAPS.len() { return None; }
     let idx = (cp & 0xFF) as u32;
@@ -131,7 +146,8 @@ fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     let bit = (idx % 8) as u8;
     if (b[byte] & (1 << bit)) == 0 { return None; }
     match block {
-"#);
+"#,
+    );
 
     for block in 0u32..0x110u32 {
         let fname = format!("{:02x}.rs", block);
@@ -147,7 +163,8 @@ fn write_mod_rs(out_dir: &Path, latin1: &[Option<String>]) {
     // Emit direct table for 0x00-0xFF (empty string means no mapping / removed)
     mod_lines.push_str("pub static MAP_0_255: [&'static str; 256] = [\n");
     for cp in 0u32..256u32 {
-        if cp < 0x80 { // ASCII: identity, represent as empty => no override
+        if cp < 0x80 {
+            // ASCII: identity, represent as empty => no override
             mod_lines.push_str("    \"\",\n");
             continue;
         }
@@ -175,17 +192,20 @@ fn write_block(out_dir: &Path, block: u32, json_text: &str, latin1: &mut [Option
         None => return,
     };
     if obj.is_empty() {
-    let _ = fs::remove_file(out_dir.join(format!("{:02x}.rs", block))); // remove stale empty block file if present
+        let _ = fs::remove_file(out_dir.join(format!("{:02x}.rs", block))); // remove stale empty block file if present
         return;
     }
 
     let mut entries = String::new();
     for (k, val) in obj {
         let cp: u32 = k.parse().expect("invalid codepoint key from python json");
-        let s = val.as_str().expect("expected string value in unidecode json");
+        let s = val
+            .as_str()
+            .expect("expected string value in unidecode json");
         let s_escaped = format!("{:?}", s); // Valid Rust string literal
         entries.push_str(&format!("    {}u32 => {},\n", cp, s_escaped));
-        if cp < 256 && cp >= 0x80 { // Only store non-ASCII transliterations in latin1 table
+        if (0x80..256).contains(&cp) {
+            // Only store non-ASCII transliterations in latin1 table
             latin1[cp as usize] = Some(s_escaped);
         }
     }
@@ -203,4 +223,3 @@ pub static BLOCK_{:02X}: phf::Map<u32, &'static str> = phf_map!{{
     let fname = out_dir.join(format!("{:02x}.rs", block));
     fs::write(&fname, content).expect("failed to write block file");
 }
-
