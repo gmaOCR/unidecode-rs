@@ -48,3 +48,4 @@ harness = false
 bindings = "pyo3"
 module-name = "unidecode_rs"
 requires = ["cffi"]
+name = "unidecode-pyo3"
