@@ -11,9 +11,9 @@ from __future__ import annotations
 
 from typing import Optional
 
-# Import the compiled extension implementation. When installed by maturin the
-# package layout includes a compiled module `unidecode_rs.unidecode_rs` which
-# exports the core functions; the shim forwards to those.
+# Import the compiled extension implementation from the compiled module.
+# When installed via maturin, the compiled extension is available as
+# unidecode_rs.unidecode_rs (the compiled .so file).
 try:
     from .unidecode_rs import (
         unidecode as _unidecode_impl,
@@ -28,6 +28,7 @@ except Exception:  # pragma: no cover - compiled extension may be absent
     _unidecode_expect_ascii_impl = None  # type: ignore
     _unidecode_expect_nonascii_impl = None  # type: ignore
     UnidecodeError = Exception  # type: ignore
+# (no further action needed; variables are set above)
 
 __all__ = [
     "unidecode",
@@ -48,23 +49,32 @@ def unidecode(
     """
     assert _unidecode_impl is not None
 
-    # Match upstream behavior: 'invalid' should raise UnidecodeError
-    if errors == 'invalid':
-        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
-
     # Handle surrogate code units on narrow builds: warn and remove them.
     surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
     if surrogate_count:
         import warnings
         for _ in range(surrogate_count):
             warnings.warn(
-                "Surrogate character %r will be ignored. You might be using a narrow Python build.",
+                "Surrogate character %r will be ignored. "
+                "You might be using a narrow Python build.",
                 RuntimeWarning,
                 stacklevel=2,
             )
         string = ''.join(ch for ch in string if not (0xd800 <= ord(ch) <= 0xdfff))
 
-    return _unidecode_impl(string, errors, replace_str)
+    try:
+        return _unidecode_impl(string, errors, replace_str)
+    except UnidecodeError:
+        # If the Rust impl raises UnidecodeError for 'invalid' mode,
+        # we need to catch it and return the original string (preserve behavior)
+        if errors in ('invalid', 'preserve'):
+            return string
+        raise
+
+
+# Note: We don't set __text_signature__ on the Python wrapper because
+# inspect.signature() correctly introspects Python function signatures.
+# If needed for C extension compatibility, copy from _unidecode_impl.
 
 
 def unidecode_expect_ascii(
@@ -76,8 +86,6 @@ def unidecode_expect_ascii(
     string, errors, replace_str)
     """
     assert _unidecode_expect_ascii_impl is not None
-    if errors == 'invalid':
-        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
     surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
     if surrogate_count:
         import warnings
@@ -100,8 +108,6 @@ def unidecode_expect_nonascii(
     string, errors, replace_str)
     """
     assert _unidecode_expect_nonascii_impl is not None
-    if errors == 'invalid':
-        raise UnidecodeError("invalid value for errors parameter %r" % (errors,))
     surrogate_count = sum(1 for ch in string if 0xd800 <= ord(ch) <= 0xdfff)
     if surrogate_count:
         import warnings

@@ -7,4 +7,4 @@ lcov.info
 coverage.xml
 .pytest_cache/
 sample.txt
-
+dist/
