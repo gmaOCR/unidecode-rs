@@ -158,6 +158,7 @@ fn unidecode_with_policy(input: &str, policy: ErrorsPolicy<'_>) -> String {
 }
 
 /// Version returning a result used by Python binding for strict mode.
+#[allow(dead_code)]
 pub(crate) fn unidecode_with_policy_result(
     input: &str,
     policy: ErrorsPolicy<'_>,

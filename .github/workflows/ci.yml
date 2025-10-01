@@ -119,7 +119,8 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           .venv/bin/python -m pip install --upgrade pip
-          .venv/bin/python -m pip install pytest pytest-cov coverage
+          # ensure maturin is available to build the extension
+          .venv/bin/python -m pip install maturin pytest pytest-cov coverage
           # build & install extension into venv
           .venv/bin/python -m maturin develop --release --features python
 

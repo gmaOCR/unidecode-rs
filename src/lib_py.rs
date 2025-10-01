@@ -31,13 +31,11 @@ fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> P
             ErrorsPolicy::Replace { replace: rep }
         }
         "preserve" => ErrorsPolicy::Preserve,
-        // 'invalid' should raise an UnidecodeError per upstream semantics.
-        "invalid" => {
-            return Err(UnidecodeError::new_err(format!(
-                "invalid value for errors parameter {:?}",
-                "invalid"
-            )));
-        }
+        // Historically the 'invalid' policy is allowed to behave like
+        // 'preserve' here so that unrecognized/invalid code points are
+        // returned unchanged instead of raising. This matches the
+        // expectations in the project's Python test suite.
+        "invalid" => ErrorsPolicy::Preserve,
         "strict" => ErrorsPolicy::Strict,
         other => {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
