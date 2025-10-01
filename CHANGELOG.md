@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## 0.2.1 - 2025-10-01
+- Fix: CI workflow (venv/maturin usage) so Python tests run reliably in GitHub Actions
+- Fix: Treat `errors='invalid'` like `preserve` in Python bindings to match upstream tests
+- Docs: README and build instructions cleanup
+
+
 ## 0.1.0 - Initial release
 - Initial Rust implementation of Unidecode-style transliteration.
 - Provides a `unidecode_rs` crate with optional PyO3/Python bindings (feature `python`).

@@ -43,14 +43,21 @@ def main() -> None:
         "pip",
         "maturin",
     ])
+    # run maturin from repository root using the current interpreter so the
+    # Cargo.toml in the project root is discovered even when this script is
+    # executed from the `scripts/` directory.
+    repo_root = Path(__file__).resolve().parent.parent
     subprocess.check_call(
         [
+            sys.executable,
+            "-m",
             "maturin",
             "develop",
             "--release",
             "--features",
             "python",
-        ]
+        ],
+        cwd=repo_root,
     )
 
     print("importing modules...")
