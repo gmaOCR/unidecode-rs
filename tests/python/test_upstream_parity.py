@@ -1,6 +1,5 @@
 import importlib
 import importlib.util
-import inspect
 import sys
 import types
 import os
@@ -120,6 +119,10 @@ def test_upstream_unidecode_module():
     here = os.path.dirname(__file__)
     repo_root = os.path.dirname(os.path.dirname(here))
     upstream_tests_dir = os.path.join(repo_root, 'unidecode', 'tests')
+    # If upstream test directory is not present in CI, skip this parity test
+    if not os.path.isdir(upstream_tests_dir):
+        import pytest
+        pytest.skip('Upstream unidecode tests not present in repository')
 
     to_run = []
     for fn in os.listdir(upstream_tests_dir):
