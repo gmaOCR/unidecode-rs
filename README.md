@@ -1,19 +1,5 @@
-# unidecode-rs — Unicode → ASCII transliteration faithful to Python
 
-[![CI](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml)
-[![Crates.io](https://img.shields.io/crates/v/unidecode-rs.svg)](https://crates.io/crates/unidecode-rs)
-[![Docs](https://docs.rs/unidecode-rs/badge.svg)](https://docs.rs/unidecode-rs)
-[![Coverage](https://codecov.io/gh/gmaOCR/unidecode-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/gmaOCR/unidecode-rs)
-[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![Python Wheels](https://img.shields.io/badge/python-wheels-blue)](https://pypi.org/project/unidecode-pyo3)
-
-Fast Rust implementation (optional Python bindings via PyO3) targeting bit‑for‑bit equivalence with Python [Unidecode]. Provides:
-
-- Same output as `Unidecode` for all covered tables
-- Noticeably higher performance (see perf snapshot in tests)
-- Golden tests comparing dynamically against the Python version
-- High coverage on critical paths (bitmap + per‑block dispatch)
-# unidecode-rs — Unicode → ASCII transliteration faithful to Python
+# unidecode-rs - Unicode → ASCII transliteration faithful to Python
 
 [![CI](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gmaOCR/unidecode-rs/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/unidecode-rs.svg)](https://crates.io/crates/unidecode-rs)
@@ -81,7 +67,7 @@ python -c "import unidecode_rs; print(unidecode_rs.unidecode('déjà vu'))"
 To build a distributable wheel:
 
 ```bash
-maturin build --release --features python
+maturin build --release --features python -o dist/
 # Wheels are placed in dist/ directory
 pip install dist/unidecode_pyo3-*.whl
 ```
@@ -101,7 +87,7 @@ print(unidecode_rs.unidecode("Příliš žluťoučký kůň"))
 
 Minimal API: single function `unidecode(text: str, errors: Optional[str] = None, replace_str: Optional[str] = None) -> str`.
 
-## Idempotence — what is it?
+## Idempotence - what is it?
 
 A function is idempotent if applying it multiple times yields the same result as applying it once. Here:
 
