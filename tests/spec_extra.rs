@@ -80,7 +80,8 @@ fn musical_symbols_subset() {
     let symbols = [0x1D100u32, 0x1D11E, 0x1D122];
     for cp in symbols {
         if let Some(ch) = char::from_u32(cp) {
-            let out = unidecode(&ch.to_string());
+            let s = ch.to_string();
+            let out = unidecode(&s);
             assert!(out.is_ascii());
         }
     }

@@ -18,8 +18,8 @@ proptest! {
 proptest! {
     #[test]
     fn idempotent_default(ref s in "(?s).{0,256}") {
-        let out1 = unidecode(s);
-        let out2 = unidecode(&out1);
+        let out1 = unidecode(s).into_owned();
+        let out2 = unidecode(&out1).into_owned();
         prop_assert_eq!(out1, out2);
     }
 }

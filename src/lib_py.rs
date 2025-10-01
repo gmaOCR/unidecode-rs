@@ -18,10 +18,8 @@ create_exception!(unidecode_rs, UnidecodeError, PyException);
 #[pyfunction(signature = (string, errors=None, replace_str=None), text_signature = "(string, errors=None, replace_str=None)")]
 /// Transliterates a Unicode string to ASCII (mirror of Python `unidecode.unidecode`).
 fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> PyResult<String> {
-    // Attempt to extract a Rust String from the Python object. If the Python
-    // string contains unpaired surrogates, extraction may fail; in that case
-    // we fall back to encoding/decoding via 'utf-16' with 'surrogatepass'.
-    let string: String = string.to_string();
+    // string is already a &str reference, no need for to_string() conversion
+    // Only convert to String when necessary for the result
     use crate::ErrorsPolicy;
     let policy = match errors.unwrap_or("") {
         "" => ErrorsPolicy::Default,
@@ -44,7 +42,7 @@ fn unidecode(string: &str, errors: Option<&str>, replace_str: Option<&str>) -> P
             )));
         }
     };
-    match crate::unidecode_with_policy_result(&string, policy) {
+    match crate::unidecode_with_policy_result(string, policy) {
         Ok(s) => Ok(s),
         Err(idx) => {
             // Create error instance of UnidecodeError, attach index attribute, raise.

@@ -56,7 +56,8 @@ fn circled_latin_subset() {
     // Only a subset (a..z) small; full coverage in Python tests already.
     for i in 0..26 {
         let cp = 0x24d0 + i;
-        let out = unidecode(&char::from_u32(cp).unwrap().to_string());
+        let s = char::from_u32(cp).unwrap().to_string();
+        let out = unidecode(&s);
         assert_eq!(out, ((b'a' + i as u8) as char).to_string());
     }
 }
@@ -87,7 +88,8 @@ fn non_bmp_basic() {
     let samples = [0x1d5a0u32, 0x1d5c4, 0x1d5c6];
     for cp in samples {
         let ch = char::from_u32(cp).unwrap();
-        let out = unidecode(&ch.to_string());
+        let s = ch.to_string();
+        let out = unidecode(&s);
         // Current implementation may not yet provide a mapping; empty is acceptable.
         if !out.is_empty() {
             assert!(out.is_ascii(), "Non ASCII output for U+{:X}: {:?}", cp, out);
@@ -118,7 +120,8 @@ fn large_scan_subset_no_panic_ascii_output() {
             Some(c) => c,
             None => continue,
         };
-        let out = unidecode(&ch.to_string());
+        let s = ch.to_string();
+        let out = unidecode(&s);
         assert!(
             out.is_ascii(),
             "Non ASCII output at U+{:04X}: {:?}",

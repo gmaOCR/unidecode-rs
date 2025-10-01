@@ -886,6 +886,7 @@ version = "0.2.1"
 dependencies = [
  "criterion",
  "deunicode 0.4.5",
+ "memchr",
  "phf",
  "proptest",
  "pyo3",

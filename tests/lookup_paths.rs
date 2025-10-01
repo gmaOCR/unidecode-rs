@@ -15,7 +15,8 @@ fn sample_multiple_blocks() {
     ];
     for (cp, expected_fragment) in samples {
         let ch = char::from_u32(cp).unwrap();
-        let out = unidecode(&ch.to_string());
+        let s = ch.to_string();
+        let out = unidecode(&s);
         if expected_fragment == "(R)" {
             assert!(
                 out == "(R)" || out == "(r)",
